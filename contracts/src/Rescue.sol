@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
-import "../lib/oz/contracts//token/ERC20/IERC20.sol";
+import "@oz/token/ERC20/IERC20.sol";
 
 /**
  * @title Rescue
@@ -20,7 +20,7 @@ contract Rescue {
      *  EVENTS, ERRORS, MODIFIERS
     ***********************************************/
     /// Emit when an asset is transfered in the rescueAssets function
-    event AssetTransfer(address indexed from, address to, address amount);
+    event AssetTransfer(address indexed from, address erc20Contract, uint256 amount);
 
     /// Emit when an asset fails to transfer in the rescueAssets function
     event AssetTransferFailure(address indexed from, address erc20Contract, uint256 amount);
@@ -37,7 +37,7 @@ contract Rescue {
             uint256 tokenBalance = IERC20(erc20Addresses[i]).balanceOf(msg.sender);
             // Function call will throw in event of failure as per ERC20 spec
             try IERC20(erc20Addresses[i]).transferFrom(msg.sender, backupAddress, tokenBalance) {
-                // nothing to do
+                emit AssetTransfer(msg.sender, erc20Addresses[i], tokenBalance);
             } catch {
                 // Simply log that this asset couldn't be transferred to the backup address
                 emit AssetTransferFailure(msg.sender, erc20Addresses[i], tokenBalance);
