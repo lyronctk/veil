@@ -1,8 +1,5 @@
 [default]
 fuzz_runs = 256
-src=forge-contracts/src
 
 [hugeRun]
 fuzz_runs = 2048
-
-
