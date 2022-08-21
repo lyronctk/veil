@@ -1,32 +1,35 @@
-const ethers = require('ethers');
+import { ethers, providers } from 'ethers';
 const WSS_PROVIDER: string = 'wss://mainnet.infura.io/ws/v3/24cbf7ab0f8c4621ab876e6b67b68a3d';
+const MY_ADDRESS = '0xFbC6BFD3884b480a4e45F9AF8e4213Aa1430496E';
 
-const myAccounts = ['0xdeadbeef'];
+class Watchtower {
+  provider: ethers.providers.WebSocketProvider;
 
-/*
-- Listen for all pending transactions
-- Get transaction data via txhash
-- See msg.sender from ecrecover
-- Check if msg.sender is in our accounts
-- If it is, send out a cancel transaction
-*/
+  constructor() {
+    console.log(`[${new Date().toLocaleTimeString()}] Connecting via WebSocket...`);
+    this.provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
+  }
 
-export function main() {
-  console.log(`[${new Date().toLocaleTimeString()}] Connecting via WebSocket...`);
-  const provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
-  let network = provider.getNetwork();
-  network.then((res: any) => console.log(`[${new Date().toLocaleTimeString()}] Connected to chain ID ${res.chainId}`));
+  async listenForPendingTxs() {
+    this.provider.on('pending', (txHash: string) => {
+      if (txHash) {
+        process.stdout.write(`[${new Date().toLocaleTimeString()}] Scanning transactions: ${txHash} \r`);
+        this.processTx(txHash);
+      }
+    });
+  }
 
-  var transactionHash = '0x7baea23e7d77bff455d94f0c81916f938c398252fb62fce2cdb43643134ce4ed';
-  provider.getTransaction(transactionHash).then((x: any) => {
-    console.log(x);
-  });
+  async processTx(txHash: string) {
+    const tx = await this.provider.getTransaction(txHash);
+    if (tx && tx.from == MY_ADDRESS) {
+      this.sendCancelTx(tx);
+    }
+  }
 
-  // provider.on('pending', (txHash: any) => {
-  //   if (txHash) {
-  //     process.stdout.write(`[${new Date().toLocaleTimeString()}] Scanning transactions: ${txHash} \r`);
-  //   }
-  // });
+  async sendCancelTx(tx: ethers.providers.TransactionResponse) {
+    console.log('cancel');
+  }
 }
 
-main();
+const watchtower = new Watchtower();
+watchtower.listenForPendingTxs();
