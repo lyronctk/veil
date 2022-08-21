@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.11;
-import "../lib/oz/contracts//token/ERC20/IERC20.sol";
+import "@oz/token/ERC20/IERC20.sol";
 
 /**
  * @title Rescue
