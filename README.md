@@ -8,7 +8,7 @@ The immutability of transactions & lack of recourse in the event of a personal w
 ## Architecture & Flow
 [TODO - Update with Description]
 
-<img width="986" alt="image" src="https://user-images.githubusercontent.com/97858468/185806805-ea25b46d-5e2e-45c8-a711-bd74dbbd65dc.png">
+<img width="867" alt="image" src="https://user-images.githubusercontent.com/97858468/185810062-228b9d12-a362-47b8-85ba-68021f7be222.png">
 
 ## Improvements
 [TODO]
