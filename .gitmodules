@@ -4,3 +4,6 @@
 [submodule "forge-contracts/lib/solmate"]
 	path = forge-contracts/lib/solmate
 	url = https://github.com/Rari-Capital/solmate
+[submodule "forge-contracts/lib/forge-std"]
+	path = forge-contracts/lib/forge-std
+	url = https://github.com/brockelmore/forge-std
