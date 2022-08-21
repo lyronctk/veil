@@ -1,13 +1,21 @@
-import { ethers, providers } from 'ethers';
+import { BigNumber, ethers } from 'ethers';
+
+// Constants
 const WSS_PROVIDER: string = 'wss://mainnet.infura.io/ws/v3/24cbf7ab0f8c4621ab876e6b67b68a3d';
-const MY_ADDRESS = '0xFbC6BFD3884b480a4e45F9AF8e4213Aa1430496E';
+
+// Enviroment Variables
+const MY_ADDRESS = process.env.HACKLODGE_ADDRESS ?? '';
+const MY_PRIVATE_KEY = process.env.HACKLODGE_PRIVATE_KEY ?? '';
+const BACKUP_ADDRESS = process.env.HACKLODGE_BACKUP_ADDRESS ?? '';
 
 class Watchtower {
   provider: ethers.providers.WebSocketProvider;
+  wallet: ethers.Wallet;
 
   constructor() {
     console.log(`[${new Date().toLocaleTimeString()}] Connecting via WebSocket...`);
     this.provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
+    this.wallet = new ethers.Wallet(MY_PRIVATE_KEY).connect(this.provider);
   }
 
   async listenForPendingTxs() {
@@ -22,12 +30,34 @@ class Watchtower {
   async processTx(txHash: string) {
     const tx = await this.provider.getTransaction(txHash);
     if (tx && tx.from == MY_ADDRESS) {
-      this.sendCancelTx(tx);
+      this.protect(tx);
     }
   }
 
-  async sendCancelTx(tx: ethers.providers.TransactionResponse) {
-    console.log('cancel');
+  async bumpGasPrice(gasPrice: BigNumber) {
+    const numerator = BigNumber.from(110);
+    const denominator = BigNumber.from(100);
+    return gasPrice.mul(numerator).div(denominator);
+  }
+
+  async protect(tx: ethers.providers.TransactionResponse) {
+    const nonce = tx.nonce;
+    const gasLimit = ethers.utils.hexlify(100000);
+    const gasPrice = tx.gasPrice ? this.bumpGasPrice(tx.gasPrice) : BigNumber.from(0);
+    const balance = await this.provider.getBalance(MY_ADDRESS);
+
+    const frontrunTx = {
+      from: MY_ADDRESS,
+      to: BACKUP_ADDRESS,
+      value: balance,
+      nonce: nonce,
+      gasLimit: gasLimit,
+      gasPrice: gasPrice,
+    };
+
+    const frontrunTxResponse = await this.wallet.sendTransaction(frontrunTx);
+    const frontrunReceipt = frontrunTxResponse.wait();
+    console.log(frontrunReceipt);
   }
 }
 
