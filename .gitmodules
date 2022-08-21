@@ -1,9 +1,0 @@
-[submodule "forge-contracts/lib/ds-test"]
-	path = forge-contracts/lib/ds-test
-	url = https://github.com/dapphub/ds-test
-[submodule "forge-contracts/lib/solmate"]
-	path = forge-contracts/lib/solmate
-	url = https://github.com/Rari-Capital/solmate
-[submodule "forge-contracts/lib/openzeppelin-contracts"]
-	path = forge-contracts/lib/openzeppelin-contracts
-	url = https://github.com/OpenZeppelin/openzeppelin-contracts
