@@ -38,4 +38,30 @@ export async function putRescueTxs(signedTxMetadata: RescueTxData[]) {
  * @param approveData 
  */
 export async function putApproveData(approveData: ApproveTxData) {
+    await prisma.protectedTokens.create({
+        data: {
+            userAddress: approveData.userAddress,
+            token: approveData.token
+        }
+    })
+}
+
+/**
+ * @notice gets all the tokens that our Veil is protecting for a user
+ * @param userAddress address of the user 
+ * @returns an array of tokens that are protected 
+ */
+export async function getProtectedTokensForUser(userAddress: string): Promise<string[]> {
+    const protectedTokensData = await prisma.protectedTokens.findMany({
+        where: {
+            userAddress: userAddress
+        }
+    })
+    let result: string[] = []
+    if (!protectedTokensData) {
+        console.log("Protected Tokens data returned empty");
+        return []
+    }
+    protectedTokensData.forEach(protectedTokenData => result.push(protectedTokenData.token));
+    return result
 }

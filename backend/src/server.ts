@@ -2,7 +2,7 @@ import express, { Express } from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
 import { BigNumber, ethers } from 'ethers';
-import { getRescueTx, putRescueTxs } from './db/dbQueries';
+import { getRescueTx, putRescueTxs, putApproveData, getProtectedTokensForUser } from './db/dbQueries';
 import { RescueTxData, ApproveTxData } from './types/customTypes';
 
 dotenv.config()
@@ -34,11 +34,15 @@ app.post('/postRescueTxs', async (req, res) => {
     await putRescueTxs(req.body.signedTxs)
 })
 
+// Gets the protected tokens for a certain user
+app.get('getProtectedTokens', async (req, res) => {
+    return await getProtectedTokensForUser(req.body.userAddress)
+})
+
 // Submit multiple approve txs on-chain
 // reigster that the asset is protected only if the tx 
 app.post('/postApproveTxs', async (req, res) => {
     const approveData: ApproveTxData[] = req.body.approveData;
-    provider: ethers.providers.WebSocketProvider;
     for (let i = 0; i < approveData.length; i++) {
         // Send the tx to the mempool
         provider.sendTransaction(approveData[i].signedTx).then((txReceipt) => {
@@ -46,7 +50,7 @@ app.post('/postApproveTxs', async (req, res) => {
             provider.waitForTransaction(txReceipt.hash, 1, 60).then((txReceipt) => {
                 // The tx has been confirmed with 1 block confirmation, so let's 
                 // add the fact that this token is being protected by us on behalf of the user
-                // TODO
+                putApproveData(approveData[i])
             })
         }) 
     }
