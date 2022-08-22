@@ -31,6 +31,10 @@ struct Arguments {
     max_gas: usize,
     #[clap(long)]
     gas_step: usize,
+    #[clap(long)]
+    nonce: usize,
+    #[clap(long)]
+    output_path: String,
 }
 
 #[tokio::main]
@@ -50,6 +54,8 @@ async fn main() -> Result<()> {
     let user_address: Address = wallet.address();
     let backup_address = args.backup_address.parse::<Address>()?;
     let contract_address = args.contract_address.parse::<Address>()?;
+    let start_nonce = args.nonce;
+    let output_path = args.output_path;
 
     let min_gas = args.min_gas;
     let max_gas = args.max_gas;
@@ -70,8 +76,8 @@ async fn main() -> Result<()> {
     let data = tx.data.as_ref().unwrap().clone();
 
     // Presign rescue transactions
-    let mut buffer = File::create("presigned.csv")?;
-    for nonce in 0..1000 {
+    let mut buffer = File::create(output_path)?;
+    for nonce in start_nonce..(start_nonce + 1000) {
         for gas_price in (min_gas..max_gas).step_by(gas_step) {
             let tx: TypedTransaction = TransactionRequest::new()
                 .to(backup_address)
@@ -83,13 +89,12 @@ async fn main() -> Result<()> {
             let signature = client.signer().sign_transaction_sync(&tx);
             let raw_tx = tx.rlp_signed(&signature);
             let rlp = serde_json::to_string(&raw_tx)?;
-            buffer.write(format!("{},{},{}\n", rlp, nonce, gas_price).as_bytes())?;
+            buffer.write(format!("rescue,{},{},{}\n", rlp, nonce, gas_price).as_bytes())?;
         }
     }
-    buffer.flush()?;
 
     // Presign approve transactions
-    let mut buffer = File::create("approves.csv")?;
+    let mut offset: usize = 0;
     ERC20_ADDRESSES.map(|s| {
         let erc20_address = s.parse::<Address>().unwrap();
         let contract = ERC20::new(erc20_address, client.clone());
@@ -101,12 +106,16 @@ async fn main() -> Result<()> {
             .to(erc20_address)
             .from(user_address)
             .data(data)
+            .nonce(start_nonce + offset)
             .into();
 
         let signature = client.signer().sign_transaction_sync(&tx);
         let raw_tx = tx.rlp_signed(&signature);
         let rlp = serde_json::to_string(&raw_tx).unwrap();
-        buffer.write(format!("{}\n", rlp).as_bytes()).unwrap();
+        buffer
+            .write(format!("approve,{},,\n", rlp).as_bytes())
+            .unwrap();
+        offset += 1;
     });
     buffer.flush()?;
 
