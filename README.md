@@ -7,7 +7,7 @@ Watchtower protects your assets by frontrunning unauthorized transactions and tr
 This project was made as part of Hack Lodge S23. [Checkout our blog post](https://watchtower.xyz).
 
 ## Usage
-Visit our websiste at [watchtower.xyz](watchtower.xyz) to get setup. Using Ethereum Watchtower will require you to install a client tool that will presign certain transactions under the event that your wallet's funds are under attack. The client runs entirely locally and requires no connection to the internet. These transactions will then be broadcasted by our hosted service which will monitor the mempool for unauthorized transactions.
+Visit our [websiste](watchtower.xyz) to get setup. Using Ethereum Watchtower will require you to install a client tool that will presign certain transactions under the event that your wallet's funds are under attack. The client runs entirely locally and requires no connection to the internet. These transactions will then be broadcasted by our hosted service which will monitor the mempool for unauthorized transactions.
 
 Requires Rust 1.56.1 or higher. You can install rust [here](https://www.rust-lang.org/tools/install).
 ```
