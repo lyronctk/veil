@@ -12,6 +12,11 @@ import Papa from "papaparse";
 
 const SERVER_ENDPOINT = "http://localhost:8000";
 
+const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR"
+const CLI_RESCUE = "--contract-address 0x00";
+const CLI_FUNC = `--min-gas 10 --max-gas 100 --gas-step 10 --nonce 0`
+const CLI_OUT = "--output-path not-your-private-keys.csv"
+
 export default function Home() {
   const { data: signer } = useSigner();
   const [cliCmd, setCliCmd] = React.useState(null);
@@ -23,7 +28,11 @@ export default function Home() {
 
   const constructCliCmd = async (signer) => {
     const signerAddr =  await signer.getAddress()
-    fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`)
+    fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`).then(async (res) => {
+      const heldAddresses = await res.json();
+      const tokenParam = `--tokens ${heldAddresses.toString()}`;
+      setCliCmd(`watchtower ${CLI_USER} ${CLI_RESCUE} ${CLI_FUNC} ${tokenParam} ${CLI_OUT}`);
+    })
   }
 
   const uploadSignatures = async (event) => {
