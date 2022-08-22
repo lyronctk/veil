@@ -10,6 +10,7 @@
   "devDependencies": {
     "@types/node": "^17.0.21",
     "prettier": "^2.5.1",
+    "prisma": "^4.2.1",
     "ts-node": "^10.9.1",
     "typescript": "^4.6.2"
   },
@@ -19,6 +20,7 @@
     "dev": "tsc -W"
   },
   "dependencies": {
+    "@prisma/client": "4.2.1",
     "@typechain/ethers-v5": "^10.1.0",
     "dotenv": "^16.0.1",
     "ethers": "^5.7.0"
