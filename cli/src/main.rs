@@ -77,7 +77,7 @@ async fn main() -> Result<()> {
 
     // Presign rescue transactions
     let mut buffer = File::create(output_path)?;
-    buffer.write("type,signedTx,nonce,gasPrice".as_bytes())?;
+    buffer.write("type,signedTx,nonce,gasPrice\n".as_bytes())?;
     for nonce in start_nonce..(start_nonce + 1000) {
         for gas_price in (min_gas..max_gas).step_by(gas_step) {
             let tx: TypedTransaction = TransactionRequest::new()
