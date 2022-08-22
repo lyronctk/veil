@@ -33,6 +33,7 @@ async fn main() -> Result<()> {
 
     // Setup
     let address = env::var("HACKLODGE_ADDRESS")?.parse::<Address>()?;
+    let backup_address = env::var("HACKLODGE_BACKUP_ADDRESS")?.parse::<Address>()?;
     let private_key = env::var("HACKLODGE_PRIVATE_KEY")?;
     let wallet = private_key.parse::<LocalWallet>()?;
     let provider = Provider::<Http>::try_from(HTTP_PROVIDER)?;
@@ -40,7 +41,12 @@ async fn main() -> Result<()> {
 
     // Generate calldata
     let contract = Watchtower::new(address, client.clone());
-    let tx = contract.approve(address, U256::from(100));
+    let tx = contract.rescue_assets(
+        ERC20_ADDRESSES
+            .map(|s| s.parse::<Address>().unwrap())
+            .into(),
+        backup_address,
+    );
     let tx = tx.tx.as_eip1559_ref().unwrap();
     let data = tx.data.as_ref().unwrap().clone();
 
@@ -88,7 +94,3 @@ async fn main() -> Result<()> {
 
     Ok(())
 }
-
-/*
-problem: can't presign gas price ?
-*/
