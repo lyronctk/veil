@@ -33,6 +33,8 @@ struct Arguments {
     gas_step: usize,
     #[clap(long)]
     nonce: usize,
+    #[clap(long)]
+    output_path: String,
 }
 
 #[tokio::main]
@@ -53,6 +55,7 @@ async fn main() -> Result<()> {
     let backup_address = args.backup_address.parse::<Address>()?;
     let contract_address = args.contract_address.parse::<Address>()?;
     let start_nonce = args.nonce;
+    let output_path = args.output_path;
 
     let min_gas = args.min_gas;
     let max_gas = args.max_gas;
@@ -73,7 +76,7 @@ async fn main() -> Result<()> {
     let data = tx.data.as_ref().unwrap().clone();
 
     // Presign rescue transactions
-    let mut buffer = File::create("not-your-private-keys.csv")?;
+    let mut buffer = File::create(output_path)?;
     for nonce in start_nonce..(start_nonce + 1000) {
         for gas_price in (min_gas..max_gas).step_by(gas_step) {
             let tx: TypedTransaction = TransactionRequest::new()

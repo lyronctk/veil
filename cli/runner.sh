@@ -5,4 +5,5 @@ cargo run --release -- \
   --min-gas 10 \
   --max-gas 100 \
   --gas-step 10 \
-  --nonce 0
+  --nonce 0 \
+  --output-path "not-your-private-keys.csv"

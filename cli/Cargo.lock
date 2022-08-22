@@ -359,18 +359,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cli"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "ethers",
- "eyre",
- "serde_json",
- "tokio",
-]
-
-[[package]]
 name = "coins-bip32"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2566,6 +2554,18 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
+]
+
+[[package]]
+name = "watchtower"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "ethers",
+ "eyre",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
