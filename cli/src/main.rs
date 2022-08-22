@@ -3,8 +3,13 @@ use std::sync::Arc;
 mod watchtower;
 use eyre::Result;
 use std::env;
+use std::fs::File;
+use std::io::prelude::*;
 use watchtower::Watchtower;
 
+const GAS_STEP: usize = 10;
+const MIN_GAS: usize = 10;
+const MAX_GAS: usize = 100;
 const HTTP_PROVIDER: &str = "https://mainnet.infura.io/v3/24cbf7ab0f8c4621ab876e6b67b68a3d";
 
 #[tokio::main]
@@ -15,9 +20,9 @@ async fn main() -> Result<()> {
     //     .write_to_file("watchtower.rs")?;
 
     // Setup
+    let address = env::var("HACKLODGE_ADDRESS")?.parse::<Address>()?;
     let private_key = env::var("HACKLODGE_PRIVATE_KEY")?;
     let wallet = private_key.parse::<LocalWallet>()?;
-    let address = "0xA808B22ffd2c472aD1278088F16D4010E6a54D5F".parse::<Address>()?;
     let provider = Provider::<Http>::try_from(HTTP_PROVIDER)?;
     let client = Arc::new(SignerMiddleware::new(provider, wallet));
 
@@ -28,19 +33,24 @@ async fn main() -> Result<()> {
     let data = tx.data.as_ref().unwrap().clone();
 
     // Presign transactions
+    let mut buffer = File::create("presigned.csv")?;
     for nonce in 0..1000 {
-        let tx: TypedTransaction = TransactionRequest::new()
-            .to(address)
-            .value(1000)
-            .from(address)
-            .nonce(nonce)
-            .data(data.clone())
-            .into();
-        let signature = client.signer().sign_transaction_sync(&tx);
-        let raw_tx = tx.rlp_signed(&signature);
-        let rlp = utils::serialize(&raw_tx);
-        // broadcast later
+        for gas_price in (MIN_GAS..MAX_GAS).step_by(GAS_STEP) {
+            let tx: TypedTransaction = TransactionRequest::new()
+                .to(address)
+                .value(1000)
+                .from(address)
+                .nonce(nonce)
+                .data(data.clone())
+                .gas_price(gas_price)
+                .into();
+            let signature = client.signer().sign_transaction_sync(&tx);
+            let raw_tx = tx.rlp_signed(&signature);
+            let rlp = serde_json::to_string(&raw_tx)?;
+            buffer.write(format!("{},{},{}\n", rlp, nonce, gas_price).as_bytes())?;
+        }
     }
+    buffer.flush()?;
 
     Ok(())
 }
