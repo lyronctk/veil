@@ -14,13 +14,15 @@ datasource db {
 model RescueTxData {
     Id Int @id @default(autoincrement())
     userAddress String
-    signedTx String
+    signedTx String @unique
     nonce String
     gasPrice Int
+    @@unique([userAddress, nonce, gasPrice])
 }
 
 model ProtectedTokens {
     Id Int @id @default(autoincrement())
     userAddress String
     token String
+    @@unique([userAddress, token])
 }
