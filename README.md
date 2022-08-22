@@ -4,7 +4,7 @@
 
 Watchtower protects your assets by frontrunning unauthorized transactions and transferring all user assets to a secure, pre-specificied backup address. It can be setup within seconds, *without revealing your private key at any point in the process*.
 
-This project was made as part of Hack Lodge S23. [Checkout our blog post](https://watchtower.xyz).
+This project was made as part of Hack Lodge S22. [Checkout our blog post](https://watchtower.xyz).
 
 ## Usage
 Visit our [websiste](watchtower.xyz) to get setup. Using Ethereum Watchtower will require you to install a client tool that will presign certain transactions under the event that your wallet's funds are under attack. The client runs entirely locally and requires no connection to the internet. These transactions will then be broadcasted by our hosted service which will monitor the mempool for unauthorized transactions.
