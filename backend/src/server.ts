@@ -17,6 +17,8 @@ app.use(cors())
 
 // Generate an Ethers.js provider
 const provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
+// How long we should wait for a tx in milliseconds
+const TX_TIMEOUT = 60000
 
 // Dummy route for testing
 app.get('/', (req, res) => {
@@ -26,34 +28,38 @@ app.get('/', (req, res) => {
 // Get a signedTx with certain parameters
 app.get('/getRescueTxData', async (req, res) => {
     const {userAddress, nonce, gasPrice}: RescueTxData = req.body
-    await getRescueTx(userAddress, nonce, gasPrice)
+    const rescueTxData = await getRescueTx(userAddress, nonce, gasPrice)
+    res.send(rescueTxData);
 })
 
 // Put multiple txs in the the database
 app.post('/postRescueTxs', async (req, res) => {
     await putRescueTxs(req.body.signedTxs)
+    res.send('Posted rescue txs');
 })
 
 // Gets the protected tokens for a certain user
 app.get('getProtectedTokens', async (req, res) => {
-    return await getProtectedTokensForUser(req.body.userAddress)
+    const protectedTokens = await getProtectedTokensForUser(req.body.userAddress)
+    res.send(protectedTokens)
 })
 
 // Submit multiple approve txs on-chain
-// reigster that the asset is protected only if the tx 
+// reigster that the asset is protected only if the tx is mined on-chain 
 app.post('/postApproveTxs', async (req, res) => {
     const approveData: ApproveTxData[] = req.body.approveData;
     for (let i = 0; i < approveData.length; i++) {
         // Send the tx to the mempool
         provider.sendTransaction(approveData[i].signedTx).then((txReceipt) => {
             // Wait for the tx to be mined
-            provider.waitForTransaction(txReceipt.hash, 1, 60).then((txReceipt) => {
+            provider.waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT).then((txReceipt) => {
                 // The tx has been confirmed with 1 block confirmation, so let's 
                 // add the fact that this token is being protected by us on behalf of the user
                 putApproveData(approveData[i])
             })
-        }) 
+        })
     }
+    res.send('Approving txs have been sent on-chain')
 })
 
 app.listen(PORT, () => {
