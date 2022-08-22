@@ -3,6 +3,7 @@
 */dist
 .idea
 .vscode
+process.env
 
 # dependencies
 /node_modules
