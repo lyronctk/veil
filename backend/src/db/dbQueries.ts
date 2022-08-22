@@ -1,11 +1,5 @@
 import prisma from './dbAccess';
-
-type SignedTx = {
-    userAddress: string, 
-    nonce: string, 
-    signedTx: string,
-    gasPrice: number
-}
+import { SignedTx } from '../types/customTypes';
 
 /**
  * @notice finds the appropriate pre-signed tx
