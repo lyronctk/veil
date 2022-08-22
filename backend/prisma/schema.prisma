@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  output = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -10,10 +11,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model SignedTxs {
+model RescueTxData {
     Id Int @id @default(autoincrement())
     userAddress String
     signedTx String
     nonce String
     gasPrice Int
+}
+
+model ProtectedTokens {
+    Id Int @id @default(autoincrement())
+    userAddress String
+    token String
 }

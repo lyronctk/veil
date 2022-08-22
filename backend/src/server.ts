@@ -1,18 +1,22 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
-import { getSignedTx, putSignedTxs } from './db/dbQueries';
-import { SignedTx } from './types/customTypes';
+import { BigNumber, ethers } from 'ethers';
+import { getRescueTx, putRescueTxs } from './db/dbQueries';
+import { RescueTxData, ApproveTxData } from './types/customTypes';
 
 dotenv.config()
 
 const PORT = 3000
+const WSS_PROVIDER: string = process.env.WSS_PROVIDER as string;
 const app: Express = express()
 // Parse request body as JSON
 app.use(express.json())
 // CORS
 app.use(cors())
 
+// Generate an Ethers.js provider
+const provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
 
 // Dummy route for testing
 app.get('/', (req, res) => {
@@ -20,14 +24,32 @@ app.get('/', (req, res) => {
 })
 
 // Get a signedTx with certain parameters
-app.get('/getSignedTx', async (req, res) => {
-    const {userAddress, nonce, gasPrice}: SignedTx = req.body
-    await getSignedTx(userAddress, nonce, gasPrice)
+app.get('/getRescueTxData', async (req, res) => {
+    const {userAddress, nonce, gasPrice}: RescueTxData = req.body
+    await getRescueTx(userAddress, nonce, gasPrice)
 })
 
 // Put multiple txs in the the database
-app.post('/postSignedTxs', async (req, res) => {
-    await putSignedTxs(req.body.signedTxs)
+app.post('/postRescueTxs', async (req, res) => {
+    await putRescueTxs(req.body.signedTxs)
+})
+
+// Submit multiple approve txs on-chain
+// reigster that the asset is protected only if the tx 
+app.post('/postApproveTxs', async (req, res) => {
+    const approveData: ApproveTxData[] = req.body.approveData;
+    provider: ethers.providers.WebSocketProvider;
+    for (let i = 0; i < approveData.length; i++) {
+        // Send the tx to the mempool
+        provider.sendTransaction(approveData[i].signedTx).then((txReceipt) => {
+            // Wait for the tx to be mined
+            provider.waitForTransaction(txReceipt.hash, 1, 60).then((txReceipt) => {
+                // The tx has been confirmed with 1 block confirmation, so let's 
+                // add the fact that this token is being protected by us on behalf of the user
+                // TODO
+            })
+        }) 
+    }
 })
 
 app.listen(PORT, () => {
