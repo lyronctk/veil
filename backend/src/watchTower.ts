@@ -1,7 +1,9 @@
 import { BigNumber, ethers } from 'ethers';
+import * as dotenv from 'dotenv';
+dotenv.config()
 
 // Constants
-const WSS_PROVIDER: string = 'wss://mainnet.infura.io/ws/v3/24cbf7ab0f8c4621ab876e6b67b68a3d';
+const WSS_PROVIDER: string = process.env.WSS_PROVIDER as string;
 
 // Enviroment Variables
 const MY_ADDRESS = process.env.HACKLODGE_ADDRESS ?? '';
