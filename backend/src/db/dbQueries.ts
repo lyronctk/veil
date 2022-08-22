@@ -1,5 +1,5 @@
 import prisma from './dbAccess';
-import { SignedTx } from '../types/customTypes';
+import { RescueTxData, ApproveTxData } from '../types/customTypes';
 
 /**
  * @notice finds the appropriate pre-signed tx
@@ -7,8 +7,8 @@ import { SignedTx } from '../types/customTypes';
  * @param nonce nonce of the signed tx
  * @param minGasPrice min gas price of the signed tx
  */
-export async function getSignedTx(userAddress: string, nonce: string, minGasPrice: number): Promise<string | null> {
-    const value = await prisma.signedTxs.findFirst({
+export async function getRescueTx(userAddress: string, nonce: string, minGasPrice: number): Promise<string | null> {
+    const value = await prisma.rescueTxData.findFirst({
         where: {
             userAddress: userAddress, 
             nonce: nonce, 
@@ -27,8 +27,15 @@ export async function getSignedTx(userAddress: string, nonce: string, minGasPric
  * @notice finds the appropriate pre-signed tx
  * @param signedTxMetadata an array of signed tx objects
  */
-export async function putSignedTxs(signedTxMetadata: SignedTx[]) {
-    await prisma.signedTxs.createMany({
+export async function putRescueTxs(signedTxMetadata: RescueTxData[]) {
+    await prisma.rescueTxData.createMany({
         data: signedTxMetadata
     })
+}
+
+/**
+ * @notice stores approve data in our DB
+ * @param approveData 
+ */
+export async function putApproveData(approveData: ApproveTxData) {
 }
