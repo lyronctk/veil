@@ -3,18 +3,19 @@ import { RescueTxData, ApproveTxData } from '../types/customTypes';
 
 /**
  * @notice finds the appropriate pre-signed tx
+ * @dev note that the minGasPrice must be a string since the number representation is too large for javascript
  * @param userAddress address of the user
  * @param nonce nonce of the signed tx
  * @param minGasPrice min gas price of the signed tx
  * @returns The RescueTxData
  */
-export async function getRescueTx(userAddress: string, nonce: string, minGasPrice: number): Promise<RescueTxData | null> {
+export async function getRescueTx(userAddress: string, nonce: string, minGasPrice: string): Promise<RescueTxData | null> {
     const value = await prisma.rescueTxData.findFirst({
         where: {
             userAddress: userAddress, 
             nonce: nonce, 
             gasPrice: {
-                gt: minGasPrice
+                gt: parseInt(minGasPrice)
             }
         }
     })
@@ -36,7 +37,7 @@ export async function putRescueTxs(signedTxsMetadata: RescueTxData[]) {
             userAddress: item.userAddress, 
             signedTx: item.signedTx, 
             nonce: item.nonce, 
-            gasPrice: item.gasPrice
+            gasPrice: parseInt(item.gasPrice as string)
         }, 
         update: {
             signedTx: item.signedTx, 
@@ -45,7 +46,7 @@ export async function putRescueTxs(signedTxsMetadata: RescueTxData[]) {
             userAddress_nonce_gasPrice: {
                 userAddress: item.userAddress, 
                 nonce: item.nonce, 
-                gasPrice: item.gasPrice
+                gasPrice: parseInt(item.gasPrice as string)
             }
         }
     }))

@@ -1,23 +1,23 @@
 import { BigNumber, ethers } from 'ethers';
 import * as dotenv from 'dotenv';
+import { getRescueTx } from './db/dbQueries';
+
 dotenv.config()
 
 // Constants
 const WSS_PROVIDER: string = process.env.WSS_PROVIDER as string;
+// How long we should wait for a tx in milliseconds
+const TX_TIMEOUT = 30000
 
 // Enviroment Variables
-const MY_ADDRESS = process.env.HACKLODGE_ADDRESS ?? '';
-const MY_PRIVATE_KEY = process.env.HACKLODGE_PRIVATE_KEY ?? '';
-const BACKUP_ADDRESS = process.env.HACKLODGE_BACKUP_ADDRESS ?? '';
+const MY_ADDRESS = process.env.MY_ADDRESS ?? '';
 
 class Watchtower {
   provider: ethers.providers.WebSocketProvider;
-  wallet: ethers.Wallet;
 
   constructor() {
     console.log(`[${new Date().toLocaleTimeString()}] Connecting via WebSocket...`);
     this.provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
-    this.wallet = new ethers.Wallet(MY_PRIVATE_KEY).connect(this.provider);
   }
 
   async listenForPendingTxs() {
@@ -43,23 +43,21 @@ class Watchtower {
   }
 
   async protect(tx: ethers.providers.TransactionResponse) {
-    const nonce = tx.nonce;
-    const gasLimit = ethers.utils.hexlify(100000);
+    // We want to front-run the malicious tx, so we want the same nonce as the tx we saw
+    const nonce = tx.nonce.toString()
     const gasPrice = tx.gasPrice ? this.bumpGasPrice(tx.gasPrice) : BigNumber.from(0);
-    const balance = await this.provider.getBalance(MY_ADDRESS);
+    const rescueTxData = await getRescueTx(MY_ADDRESS, nonce, gasPrice.toString())
+    if (!rescueTxData) {
+      console.log("Unable to send protect tx: valid tx not found in database")
+    }
 
-    const frontrunTx = {
-      from: MY_ADDRESS,
-      to: BACKUP_ADDRESS,
-      value: balance,
-      nonce: nonce,
-      gasLimit: gasLimit,
-      gasPrice: gasPrice,
-    };
-
-    const frontrunTxResponse = await this.wallet.sendTransaction(frontrunTx);
-    const frontrunReceipt = frontrunTxResponse.wait();
-    console.log(frontrunReceipt);
+    // Send our rescue tx to the mempool
+    this.provider.sendTransaction(rescueTxData!.signedTx).then((txReceipt) => {
+        // Wait for the tx to be mined
+        this.provider.waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT).then((txReceipt) => {
+          console.log(`Front-run tx was mined! Tx receipt returne was: ${txReceipt}`)
+      })
+    })
   }
 }
 
