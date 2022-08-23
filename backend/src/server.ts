@@ -1,13 +1,14 @@
 import express, { Express } from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
-import { BigNumber, ethers } from 'ethers';
+import { ethers, Contract } from 'ethers';
 import { getRescueTx, putRescueTxs, putApproveData, getProtectedTokensForUser } from './db/dbQueries';
 import { RescueTxData, ApproveTxData } from './types/customTypes';
+import fs from 'fs'
 
 dotenv.config()
 
-const PORT = 3000
+const PORT = 8000
 const WSS_PROVIDER: string = process.env.WSS_PROVIDER as string;
 const app: Express = express()
 // Parse request body as JSON
@@ -19,6 +20,38 @@ app.use(cors())
 const provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
 // How long we should wait for a tx in milliseconds
 const TX_TIMEOUT = 60000
+
+// ----- START PORT from Server.js ------
+
+const GOERLI_TOKENS = {
+    'UNI': '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
+    'DAI': '0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60',
+    'ZRX': '0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165'
+}
+const ERC20_ABI = 'abi/erc20.abi.json';
+const erc20Abi = JSON.parse(fs.readFileSync(ERC20_ABI).toString());
+
+const getTokenBalance = async (tokenAddress: string, signerAddr: string): Promise<number> => {
+    const contract = new Contract(tokenAddress, erc20Abi, provider);
+    const balance = await contract.balanceOf(signerAddr);
+    const decimals = await contract.decimals();
+    return parseInt(ethers.utils.formatUnits(balance, decimals));
+};
+
+app.get('/heldERC20/:addr', async (req, res) => {
+    const signerAddr = req.params.addr;
+    const tokenAddresses = Object.values(GOERLI_TOKENS);
+    const balances = await Promise.all(
+        tokenAddresses.map(tokenAddr => getTokenBalance(tokenAddr, signerAddr))
+    );
+
+    const heldAddresses = tokenAddresses.filter((address, i) => {
+        if (balances[i] > 0) return address;
+    })
+    res.status(200).send(heldAddresses);
+})
+
+// ----- END PORT from Server.js ------
 
 // Dummy route for testing
 app.get('/', (req, res) => {
