@@ -31,13 +31,15 @@ export default function Home() {
 
   const constructCliCmd = async (signer) => {
     const signerAddr = await signer.getAddress();
-    fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`).then(async (res) => {
-      const heldAddresses = await res.json();
-      const tokenParam = `--erc20-addresses ${heldAddresses.toString()}`;
-      setCliCmd(
-        `watchtower ${CLI_USER} ${CLI_RESCUE} ${CLI_FUNC} ${tokenParam} ${CLI_OUT}`
-      );
-    });
+    fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`)
+      .then(async (res) => {
+        const heldAddresses = await res.json();
+        const tokenParam = `--erc20-addresses ${heldAddresses.toString()}`;
+        setCliCmd(
+          `watchtower ${CLI_USER} ${CLI_RESCUE} ${CLI_FUNC} ${tokenParam} ${CLI_OUT}`
+        );
+      })
+      .catch((e) => console.error(e));
   };
 
   const uploadSignatures = async (event) => {
@@ -55,15 +57,15 @@ export default function Home() {
           .map(({ type, ...others }) => {
             return others;
           });
-        approvals = approvals.slice(0, 1);  // [DEBUG] 
+        approvals = approvals.slice(0, 1); // [DEBUG]
         const approveRequestOptions = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(approvals),
         };
-        fetch(`${SERVER_ENDPOINT}/postApprovedTxs`, approveRequestOptions).then(
-          (response) => setUpApproveStat(response.status)
-        );
+        fetch(`${SERVER_ENDPOINT}/postApprovedTxs`, approveRequestOptions)
+          .then((response) => setUpApproveStat(response.status))
+          .catch((e) => console.error(e));
 
         // const rescueTxs = results.data
         //   .filter((row) => row["type"] === "rescue")
@@ -76,13 +78,13 @@ export default function Home() {
         //     headers: { "Content-Type": "application/json" },
         //     body: JSON.stringify(rescueChunk),
         //   };
-        //   fetch(`${SERVER_ENDPOINT}/postRescueTxs`, rescueRequestOptions).then(
-        //     (response) => {
+        //   fetch(`${SERVER_ENDPOINT}/postRescueTxs`, rescueRequestOptions)
+        //     .then((response) => {
         //       if (upRescueStat == 0 || upRescueStat == 200) {
         //         setUpRescueStat(response.status);
         //       }
-        //     }
-        //   );
+        //     })
+        //     .catch((e) => console.error(e));
         // });
       },
     });
