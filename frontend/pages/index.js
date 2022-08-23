@@ -13,7 +13,7 @@ import Papa from "papaparse";
 const SERVER_ENDPOINT = "http://localhost:8000";
 
 const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR"
-const CLI_RESCUE = "--contract-address 0x00";
+const CLI_RESCUE = "--contract-address 0x8F8F457a0F6BF163af60bC9254E47a44E01AD776";
 const CLI_FUNC = `--min-gas 10 --max-gas 100 --gas-step 10 --nonce 0`
 const CLI_OUT = "--output-path not-your-private-keys.csv"
 
