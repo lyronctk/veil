@@ -11,11 +11,11 @@ use watchtower::Watchtower;
 mod erc20;
 use erc20::ERC20;
 
-const ERC20_ADDRESSES: [&str; 3] = [
-    "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // Uniswap
-    "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", // Aave
-    "0xA808B22ffd2c472aD1278088F16D4010E6a54D5F", // ReFi
-];
+// const ERC20_ADDRESSES: [&str; 3] = [
+//     "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // Uniswap
+//     "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", // Aave
+//     "0xA808B22ffd2c472aD1278088F16D4010E6a54D5F", // ReFi
+// ];
 
 #[derive(Parser, Default, Debug)]
 struct Arguments {
@@ -35,6 +35,8 @@ struct Arguments {
     nonce: usize,
     #[clap(long)]
     output_path: String,
+    #[clap(long, multiple_values = true)]
+    erc20_addresses: Vec<String>,
 }
 
 #[tokio::main]
@@ -56,6 +58,7 @@ async fn main() -> Result<()> {
     let contract_address = args.contract_address.parse::<Address>()?;
     let start_nonce = args.nonce;
     let output_path = args.output_path;
+    let erc20_addresses = args.erc20_addresses;
 
     let min_gas = args.min_gas;
     let max_gas = args.max_gas;
@@ -67,9 +70,10 @@ async fn main() -> Result<()> {
     // Generate calldata
     let contract = Watchtower::new(contract_address, client.clone());
     let tx = contract.rescue_assets(
-        ERC20_ADDRESSES
+        erc20_addresses
+            .iter()
             .map(|s| s.parse::<Address>().unwrap())
-            .into(),
+            .collect(),
         backup_address,
     );
     let tx = tx.tx.as_eip1559_ref().unwrap();
@@ -96,7 +100,7 @@ async fn main() -> Result<()> {
 
     // Presign approve transactions
     let mut offset: usize = 0;
-    ERC20_ADDRESSES.map(|s| {
+    erc20_addresses.iter().for_each(|s| {
         let erc20_address = s.parse::<Address>().unwrap();
         let contract = ERC20::new(erc20_address, client.clone());
         let tx = contract.approve(contract_address, U256::max_value());
