@@ -45,6 +45,10 @@ async fn main() -> Result<()> {
     //     .generate()?
     //     .write_to_file("erc20.rs")?;
 
+    Abigen::new("Rescue", "./rescue.json")?
+        .generate()?
+        .write_to_file("rescue.rs")?;
+
     // Setup
     let args = Arguments::parse();
     let private_key = args.private_key;
@@ -82,23 +86,31 @@ async fn main() -> Result<()> {
     buffer.write("type,signedTx,nonce,gasPrice\n".as_bytes())?;
     for nonce in start_nonce..(start_nonce + 1000) {
         for gas_price in (min_gas..max_gas).step_by(gas_step) {
-            let tx: TypedTransaction = TransactionRequest::new()
-                .to(backup_address)
-                .from(user_address)
-                .nonce(nonce)
-                .data(data.clone())
-                .gas_price(gas_price)
-                .into();
-            let signature = client.signer().sign_transaction_sync(&tx);
-            let raw_tx = tx.rlp_signed(&signature);
-            let rlp = serde_json::to_string(&raw_tx)?;
-            buffer.write(
-                format!(
-                    "rescue,{},{},{},0x{:x},\n",
-                    rlp, nonce, gas_price, user_address
-                )
-                .as_bytes(),
-            )?;
+            // let contract = __::new(contract_address, client.clone());
+            // let tx = contract.rescueAssets(erc20_addresses, backup_address);
+            // let tx = tx.tx.as_eip1559_ref().unwrap();
+            // let data = tx.data.as_ref().unwrap().clone();
+
+            // let tx: TransactionRequest = TransactionRequest::new()
+            //     .from(user_address)
+            //     .chain_id(5u64)
+            //     .nonce(nonce as u64)
+            //     .gas(U256::from(2000000))
+            //     .gas_price(U256::from(gas_price * 1000000000))
+            //     .to(contract_address)
+            //     .data(data)
+            //     .into();
+
+            // let signature = client.signer().sign_transaction_sync(&tx);
+            // let raw_tx = tx.rlp_signed(&signature);
+            // let rlp = serde_json::to_string(&raw_tx)?;
+            // buffer.write(
+            //     format!(
+            //         "rescue,{},{},{},0x{:x},\n",
+            //         rlp, nonce, gas_price, user_address
+            //     )
+            //     .as_bytes(),
+            // )?;
         }
     }
 
@@ -117,9 +129,9 @@ async fn main() -> Result<()> {
         let tx: TransactionRequest = TransactionRequest::new()
             .from(user_address)
             .chain_id(5u64)
-            .nonce(start_nonce as u64)
-            .gas(U256::from(21000))
-            .gas_price(U256::from(250000000_usize))
+            .nonce((start_nonce + offset) as u64)
+            .gas(U256::from(2000000))
+            .gas_price(U256::from(5000000000_usize))
             .to(erc20_address)
             .data(data)
             .into();

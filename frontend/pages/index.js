@@ -15,7 +15,6 @@ const SERVER_ENDPOINT = "http://localhost:8000";
 const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR";
 const CLI_RESCUE =
   "--contract-address 0x8F8F457a0F6BF163af60bC9254E47a44E01AD776";
-const CLI_FUNC = `--min-gas 10 --max-gas 100 --gas-step 10 --nonce 0`;
 const CLI_OUT = "--output-path not-your-private-keys.csv";
 
 export default function Home() {
@@ -25,24 +24,27 @@ export default function Home() {
   const [upApproveStat, setUpApproveStat] = React.useState(0);
   const [upRescueStat, setUpRescueStat] = React.useState(0);
 
+  // Update the displayed CLI command when wallet is connected
   useEffect(() => {
     signer && constructCliCmd(signer);
   }, [signer]);
-
   const constructCliCmd = async (signer) => {
+    const txCt = await signer.getTransactionCount();
     const signerAddr = await signer.getAddress();
     fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`)
       .then(async (res) => {
+        const quantParam = `--min-gas 10 --max-gas 100 --gas-step 10 --nonce ${txCt}`
         const heldAddresses = await res.json();
         const strAddresses = heldAddresses.join(' ');
         const tokenParam = `--erc20-addresses ${strAddresses}`;
         setCliCmd(
-          `watchtower ${CLI_USER} ${CLI_RESCUE} ${CLI_FUNC} ${tokenParam} ${CLI_OUT}`
+          `watchtower ${CLI_USER} ${CLI_RESCUE} ${quantParam} ${tokenParam} ${CLI_OUT}`
         );
       })
       .catch((e) => console.error(e));
   };
 
+  // Send signed approval / rescue transactions to backend to be stored 
   const uploadSignatures = async (event) => {
     const chunk = (a, size) =>
       Array.from(new Array(Math.ceil(a.length / size)), (_, i) =>
@@ -53,6 +55,7 @@ export default function Home() {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
+        // Send approval transactions
         // const approvals = results.data
         //   .filter((row) => row["type"] === "approve")
         // approvals = approvals.slice(0, 1); // [DEBUG]
@@ -85,6 +88,7 @@ export default function Home() {
         console.log(rescueTxs);
         //
 
+        // Send rescue transactions
         chunk(rescueTxs, 100).map((rescueChunk) => {
           const rescueRequestOptions = {
             method: "POST",
@@ -160,7 +164,7 @@ export default function Home() {
         <p></p>
 
         <h2>
-          [5] Verify that all assets you care about are on our Rescue list
+          [5] Verify that all assets you care about are on our Rescue List
         </h2>
         <p>
           <em>sleep soundly now that your assets are secure</em>
