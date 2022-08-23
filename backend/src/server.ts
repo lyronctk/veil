@@ -5,6 +5,7 @@ import { ethers, Contract } from 'ethers';
 import { getRescueTx, putRescueTxs, putApproveData, getProtectedTokensForUser } from './db/dbQueries';
 import { RescueTxData, ApproveTxData } from './types/customTypes';
 import fs from 'fs'
+import path from 'path';
 
 dotenv.config()
 
@@ -28,8 +29,9 @@ const GOERLI_TOKENS = {
     'DAI': '0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60',
     'ZRX': '0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165'
 }
-const ERC20_ABI = 'abi/erc20.abi.json';
-const erc20Abi = JSON.parse(fs.readFileSync(ERC20_ABI).toString());
+// const ERC20_ABI_PATH = './abi/erc20.abi.json';
+const ERC20_ABI_PATH = path.join(__dirname, '.', 'abi', 'erc20.abi.json');
+const erc20Abi = JSON.parse(fs.readFileSync(ERC20_ABI_PATH).toString());
 
 const getTokenBalance = async (tokenAddress: string, signerAddr: string): Promise<number> => {
     const contract = new Contract(tokenAddress, erc20Abi, provider);
