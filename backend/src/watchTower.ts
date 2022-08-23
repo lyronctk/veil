@@ -23,17 +23,19 @@ class Watchtower {
   async listenForPendingTxs() {
     this.provider.on('pending', (txHash: string) => {
       if (txHash) {
-        process.stdout.write(`[${new Date().toLocaleTimeString()}] Scanning transactions: ${txHash} \r`);
+        console.log(`[${new Date().toLocaleTimeString()}] Scanning transactions: ${txHash} \r`);
         this.processTx(txHash);
       }
     });
   }
 
   async processTx(txHash: string) {
-    const tx = await this.provider.getTransaction(txHash);
-    if (tx && tx.from == MY_ADDRESS) {
-      this.protect(tx);
-    }
+    this.provider.getTransaction(txHash).then((tx) => {
+      if (tx && tx.from == MY_ADDRESS) {
+        console.log(`------- FOUND the TX --------- ${tx.from}`)
+        this.protect(tx);
+      }
+    })
   }
 
   bumpGasPrice(gasPrice: BigNumber) {
