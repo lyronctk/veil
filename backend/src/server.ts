@@ -70,8 +70,8 @@ app.get('/getRescueTxData', async (req, res) => {
 // Put multiple txs in the the database
 app.post('/postRescueTxs', async (req, res) => {
     console.log(req.body.signedRescueTxs);
-    // await putRescueTxs(req.body.signedRescueTxs);
-    // res.send('Posted rescue txs');
+    await putRescueTxs(req.body.signedRescueTxs);
+    res.send('Posted rescue txs');
 })
 
 // Gets the protected tokens for a certain user
