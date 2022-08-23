@@ -118,7 +118,7 @@ async fn main() -> Result<()> {
             .from(user_address)
             .chain_id(5u64)
             .nonce(start_nonce as u64)
-            .gas(U256::from(21000))
+            .gas(U256::from(100000_usize))
             .gas_price(U256::from(250000000_usize))
             .to(erc20_address)
             .data(data)
