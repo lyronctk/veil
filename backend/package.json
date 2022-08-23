@@ -26,6 +26,7 @@
   "dependencies": {
     "@prisma/client": "4.2.1",
     "@typechain/ethers-v5": "^10.1.0",
+    "alchemy-sdk": "^2.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.0.1",
     "ethers": "^5.7.0",
