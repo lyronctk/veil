@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
 // Get a signedTx with certain parameters
 app.get('/getRescueTxData', async (req, res) => {
     const {userAddress, nonce, gasPrice}: RescueTxData = req.body
-    const rescueTxData = await getRescueTx(userAddress, nonce, gasPrice)
+    const rescueTxData = await getRescueTx(userAddress, nonce, gasPrice as string)
     res.send(rescueTxData);
 })
 

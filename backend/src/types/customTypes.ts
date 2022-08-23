@@ -2,7 +2,7 @@ export type RescueTxData = {
     userAddress: string, 
     nonce: string, 
     signedTx: string,
-    gasPrice: number
+    gasPrice: string | number
 }
 
 export type ApproveTxData = {
