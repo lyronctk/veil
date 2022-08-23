@@ -34,7 +34,8 @@ export default function Home() {
     fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`)
       .then(async (res) => {
         const heldAddresses = await res.json();
-        const tokenParam = `--erc20-addresses ${heldAddresses.toString()}`;
+        const strAddresses = heldAddresses.join(' ');
+        const tokenParam = `--erc20-addresses ${strAddresses}`;
         setCliCmd(
           `watchtower ${CLI_USER} ${CLI_RESCUE} ${CLI_FUNC} ${tokenParam} ${CLI_OUT}`
         );
@@ -51,41 +52,53 @@ export default function Home() {
     Papa.parse(event.target.files[0], {
       header: true,
       skipEmptyLines: true,
-      complete: function (results) {
-        const approvals = results.data
-          .filter((row) => row["type"] === "approve")
-          .map(({ type, ...others }) => {
-            return others;
-          });
-        approvals = approvals.slice(0, 1); // [DEBUG]
-        const approveRequestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(approvals),
-        };
-        fetch(`${SERVER_ENDPOINT}/postApprovedTxs`, approveRequestOptions)
-          .then((response) => setUpApproveStat(response.status))
-          .catch((e) => console.error(e));
+      complete: async (results) => {
+        // const approvals = results.data
+        //   .filter((row) => row["type"] === "approve")
+        // approvals = approvals.slice(0, 1); // [DEBUG]
+        // const approveRequestOptions = {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({approveData: approvals}),
+        // };
+        // fetch(`${SERVER_ENDPOINT}/postApproveTxs`, approveRequestOptions)
+        //   .then((response) => setUpApproveStat(response.status))
+        //   .catch((e) => console.error(e));
 
         // const rescueTxs = results.data
         //   .filter((row) => row["type"] === "rescue")
         //   .map(({ type, ...others }) => {
         //     return others;
         //   });
-        // chunk(rescueTxs, 100).map((rescueChunk) => {
-        //   const rescueRequestOptions = {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify(rescueChunk),
-        //   };
-        //   fetch(`${SERVER_ENDPOINT}/postRescueTxs`, rescueRequestOptions)
-        //     .then((response) => {
-        //       if (upRescueStat == 0 || upRescueStat == 200) {
-        //         setUpRescueStat(response.status);
-        //       }
-        //     })
-        //     .catch((e) => console.error(e));
-        // });
+
+        // [TMP]
+        const signerAddr = await signer.getAddress();
+        if (!signerAddr) return;
+        const rescueTxs = results.data
+          .filter((row) => row["type"] === "rescue")
+          .map((row) => {
+            row["userAddress"] = signerAddr; 
+            row["gasPrice"] = parseInt(row["gasPrice"]) ; 
+            return row
+          });
+        rescueTxs = rescueTxs.slice(0, 1);
+        console.log(rescueTxs);
+        //
+
+        chunk(rescueTxs, 100).map((rescueChunk) => {
+          const rescueRequestOptions = {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({signedRescueTxs: rescueChunk}),
+          };
+          fetch(`${SERVER_ENDPOINT}/postRescueTxs`, rescueRequestOptions)
+            .then((response) => {
+              if (upRescueStat == 0 || upRescueStat == 200) {
+                setUpRescueStat(response.status);
+              }
+            })
+            .catch((e) => console.error(e));
+        });
       },
     });
   };

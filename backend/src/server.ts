@@ -29,7 +29,7 @@ const GOERLI_TOKENS = {
     'DAI': '0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60',
     'ZRX': '0xe4E81Fa6B16327D4B78CFEB83AAdE04bA7075165'
 }
-// const ERC20_ABI_PATH = './abi/erc20.abi.json';
+
 const ERC20_ABI_PATH = path.join(__dirname, '.', 'abi', 'erc20.abi.json');
 const erc20Abi = JSON.parse(fs.readFileSync(ERC20_ABI_PATH).toString());
 
@@ -37,7 +37,7 @@ const getTokenBalance = async (tokenAddress: string, signerAddr: string): Promis
     const contract = new Contract(tokenAddress, erc20Abi, provider);
     const balance = await contract.balanceOf(signerAddr);
     const decimals = await contract.decimals();
-    return parseInt(ethers.utils.formatUnits(balance, decimals));
+    return parseFloat(ethers.utils.formatUnits(balance, decimals));
 };
 
 app.get('/heldERC20/:addr', async (req, res) => {
@@ -69,8 +69,9 @@ app.get('/getRescueTxData', async (req, res) => {
 
 // Put multiple txs in the the database
 app.post('/postRescueTxs', async (req, res) => {
-    await putRescueTxs(req.body.signedTxs)
-    res.send('Posted rescue txs');
+    console.log(req.body.signedRescueTxs);
+    // await putRescueTxs(req.body.signedRescueTxs);
+    // res.send('Posted rescue txs');
 })
 
 // Gets the protected tokens for a certain user
