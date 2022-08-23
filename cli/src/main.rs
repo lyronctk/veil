@@ -1,8 +1,10 @@
 use clap::Parser;
+use ethers::types::transaction::eip2930::AccessList;
 use ethers::{prelude::*, types::transaction::eip2718::TypedTransaction};
 use eyre::Result;
 use std::fs::File;
 use std::io::prelude::*;
+use std::os::raw;
 use std::sync::Arc;
 
 mod watchtower;
@@ -10,12 +12,6 @@ use watchtower::Watchtower;
 
 mod erc20;
 use erc20::ERC20;
-
-// const ERC20_ADDRESSES: [&str; 3] = [
-//     "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", // Uniswap
-//     "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", // Aave
-//     "0xA808B22ffd2c472aD1278088F16D4010E6a54D5F", // ReFi
-// ];
 
 #[derive(Parser, Default, Debug)]
 struct Arguments {
@@ -64,8 +60,10 @@ async fn main() -> Result<()> {
     let max_gas = args.max_gas;
     let gas_step = args.gas_step;
 
-    let provider = Provider::<Http>::try_from("http://x.com")?;
-    let client = Arc::new(SignerMiddleware::new(provider, wallet));
+    let provider = Provider::<Http>::try_from(
+        "https://eth-goerli.g.alchemy.com/v2/TJucxyshwo0zf6qeWzFXSWOkhlOvrdGd",
+    )?;
+    let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
 
     // Generate calldata
     let contract = Watchtower::new(contract_address, client.clone());
@@ -104,6 +102,9 @@ async fn main() -> Result<()> {
         }
     }
 
+    // let mut xd: Bytes = "".parse::<Bytes>()?;
+    // let mut bruh: TransactionRequest = TransactionRequest::new();
+
     // Presign approve transactions
     let mut offset: usize = 0;
     erc20_addresses.iter().for_each(|s| {
@@ -113,15 +114,23 @@ async fn main() -> Result<()> {
         let tx = tx.tx.as_eip1559_ref().unwrap();
         let data = tx.data.as_ref().unwrap().clone();
 
-        let tx: TypedTransaction = TransactionRequest::new()
-            .to(erc20_address)
+        let tx: TransactionRequest = TransactionRequest::new()
             .from(user_address)
+            .chain_id(5u64)
+            .nonce(start_nonce as u64)
+            .gas(U256::from(21000))
+            .gas_price(U256::from(250000000_usize))
+            .to(erc20_address)
             .data(data)
-            .nonce(start_nonce + offset)
             .into();
 
-        let signature = client.signer().sign_transaction_sync(&tx);
-        let raw_tx = tx.rlp_signed(&signature);
+        let signature = client.signer().sign_transaction_sync(&tx.clone().into());
+        let raw_tx = tx.clone().rlp_signed(&signature);
+
+        // xd = raw_tx.clone();
+        // bruh = tx.clone().into();
+        // provider.send_raw_transaction(raw_tx.clone());
+
         let rlp = serde_json::to_string(&raw_tx).unwrap();
         buffer
             .write(
@@ -134,6 +143,14 @@ async fn main() -> Result<()> {
             .unwrap();
         offset += 1;
     });
+
+    // let a = provider.send_transaction(bruh, None).await?;
+    // println!("{:x}", *a);
+    // println!("{:x}", xd);
+    // let pending_tx = provider.send_raw_transaction(xd).await.unwrap();
+    // let tx_hash = *pending_tx;
+    // println!("{:x}", tx_hash);
+
     buffer.flush()?;
 
     Ok(())
