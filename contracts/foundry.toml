@@ -1,5 +1,5 @@
-[default]
+[profile.default]
 fuzz_runs = 256
 
-[hugeRun]
+[profile.hugeRun]
 fuzz_runs = 2048
