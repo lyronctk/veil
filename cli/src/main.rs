@@ -94,7 +94,13 @@ async fn main() -> Result<()> {
             let signature = client.signer().sign_transaction_sync(&tx);
             let raw_tx = tx.rlp_signed(&signature);
             let rlp = serde_json::to_string(&raw_tx)?;
-            buffer.write(format!("rescue,{},{},{}\n", rlp, nonce, gas_price).as_bytes())?;
+            buffer.write(
+                format!(
+                    "rescue,{},{},{},0x{:x},\n",
+                    rlp, nonce, gas_price, user_address
+                )
+                .as_bytes(),
+            )?;
         }
     }
 
@@ -118,7 +124,13 @@ async fn main() -> Result<()> {
         let raw_tx = tx.rlp_signed(&signature);
         let rlp = serde_json::to_string(&raw_tx).unwrap();
         buffer
-            .write(format!("approve,{},,\n", rlp).as_bytes())
+            .write(
+                format!(
+                    "approve,{},,,0x{:x},0x{:x}\n",
+                    rlp, user_address, erc20_address
+                )
+                .as_bytes(),
+            )
             .unwrap();
         offset += 1;
     });
