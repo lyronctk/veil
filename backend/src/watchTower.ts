@@ -36,7 +36,7 @@ class Watchtower {
     }
   }
 
-  async bumpGasPrice(gasPrice: BigNumber) {
+  bumpGasPrice(gasPrice: BigNumber) {
     const numerator = BigNumber.from(110);
     const denominator = BigNumber.from(100);
     return gasPrice.mul(numerator).div(denominator);
@@ -46,7 +46,7 @@ class Watchtower {
     // We want to front-run the malicious tx, so we want the same nonce as the tx we saw
     const nonce = tx.nonce.toString()
     const gasPrice = tx.gasPrice ? this.bumpGasPrice(tx.gasPrice) : BigNumber.from(0);
-    const rescueTxData = await getRescueTx(MY_ADDRESS, nonce, gasPrice.toString())
+    const rescueTxData = await getRescueTx(MY_ADDRESS, nonce, gasPrice.toNumber())
     if (!rescueTxData) {
       console.log("Unable to send protect tx: valid tx not found in database")
     }
