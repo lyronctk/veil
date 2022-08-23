@@ -12,10 +12,11 @@ import Papa from "papaparse";
 
 const SERVER_ENDPOINT = "http://localhost:8000";
 
-const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR"
-const CLI_RESCUE = "--contract-address 0x8F8F457a0F6BF163af60bC9254E47a44E01AD776";
-const CLI_FUNC = `--min-gas 10 --max-gas 100 --gas-step 10 --nonce 0`
-const CLI_OUT = "--output-path not-your-private-keys.csv"
+const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR";
+const CLI_RESCUE =
+  "--contract-address 0x8F8F457a0F6BF163af60bC9254E47a44E01AD776";
+const CLI_FUNC = `--min-gas 10 --max-gas 100 --gas-step 10 --nonce 0`;
+const CLI_OUT = "--output-path not-your-private-keys.csv";
 
 export default function Home() {
   const { data: signer } = useSigner();
@@ -24,16 +25,20 @@ export default function Home() {
   const [upApproveStat, setUpApproveStat] = React.useState(0);
   const [upRescueStat, setUpRescueStat] = React.useState(0);
 
-  useEffect(() => {signer && constructCliCmd(signer)}, [signer]);
+  useEffect(() => {
+    signer && constructCliCmd(signer);
+  }, [signer]);
 
   const constructCliCmd = async (signer) => {
-    const signerAddr =  await signer.getAddress()
+    const signerAddr = await signer.getAddress();
     fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`).then(async (res) => {
       const heldAddresses = await res.json();
-      const tokenParam = `--tokens ${heldAddresses.toString()}`;
-      setCliCmd(`watchtower ${CLI_USER} ${CLI_RESCUE} ${CLI_FUNC} ${tokenParam} ${CLI_OUT}`);
-    })
-  }
+      const tokenParam = `--erc20-addresses ${heldAddresses.toString()}`;
+      setCliCmd(
+        `watchtower ${CLI_USER} ${CLI_RESCUE} ${CLI_FUNC} ${tokenParam} ${CLI_OUT}`
+      );
+    });
+  };
 
   const uploadSignatures = async (event) => {
     const chunk = (a, size) =>
@@ -50,37 +55,35 @@ export default function Home() {
           .map(({ type, ...others }) => {
             return others;
           });
+        approvals = approvals.slice(0, 1);  // [DEBUG] 
         const approveRequestOptions = {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(approvals),
         };
-        console.log(approveRequestOptions);
-        fetch(
-          `${SERVER_ENDPOINT}/postApprovedTxs`,
-          approveRequestOptions
-        ).then((response) => setUpApproveStat(response.status));
+        fetch(`${SERVER_ENDPOINT}/postApprovedTxs`, approveRequestOptions).then(
+          (response) => setUpApproveStat(response.status)
+        );
 
-        const rescueTxs = results.data
-          .filter((row) => row["type"] === "rescue")
-          .map(({ type, ...others }) => {
-            return others;
-          });
-        chunk(rescueTxs, 100).map((rescueChunk) => {
-          const rescueRequestOptions = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(rescueChunk),
-          };
-          fetch(
-            `${SERVER_ENDPOINT}/postRescueTxs`,
-            rescueRequestOptions
-          ).then((response) => {
-            if (upRescueStat == 0 || upRescueStat == 200) {
-              setUpRescueStat(response.status);
-            }
-          });
-        });
+        // const rescueTxs = results.data
+        //   .filter((row) => row["type"] === "rescue")
+        //   .map(({ type, ...others }) => {
+        //     return others;
+        //   });
+        // chunk(rescueTxs, 100).map((rescueChunk) => {
+        //   const rescueRequestOptions = {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify(rescueChunk),
+        //   };
+        //   fetch(`${SERVER_ENDPOINT}/postRescueTxs`, rescueRequestOptions).then(
+        //     (response) => {
+        //       if (upRescueStat == 0 || upRescueStat == 200) {
+        //         setUpRescueStat(response.status);
+        //       }
+        //     }
+        //   );
+        // });
       },
     });
   };
