@@ -7,8 +7,8 @@ use std::io::prelude::*;
 use std::os::raw;
 use std::sync::Arc;
 
-mod watchtower;
-use watchtower::Watchtower;
+mod rescue;
+use rescue::Rescue;
 
 mod erc20;
 use erc20::ERC20;
@@ -40,14 +40,12 @@ async fn main() -> Result<()> {
     // Abigen::new("Watchtower", "./abi.json")?
     //     .generate()?
     //     .write_to_file("watchtower.rs")?;
-
     // Abigen::new("ERC20", "./erc20.json")?
     //     .generate()?
     //     .write_to_file("erc20.rs")?;
-
-    Abigen::new("Rescue", "./rescue.json")?
-        .generate()?
-        .write_to_file("rescue.rs")?;
+    // Abigen::new("Rescue", "./rescue.json")?
+    //     .generate()?
+    //     .write_to_file("rescue.rs")?;
 
     // Setup
     let args = Arguments::parse();
@@ -58,7 +56,11 @@ async fn main() -> Result<()> {
     let contract_address = args.contract_address.parse::<Address>()?;
     let start_nonce = args.nonce;
     let output_path = args.output_path;
-    let erc20_addresses = args.erc20_addresses;
+    let erc20_addresses: Vec<Address> = args
+        .erc20_addresses
+        .iter()
+        .map(|x| x.parse::<Address>().unwrap())
+        .collect();
 
     let min_gas = args.min_gas;
     let max_gas = args.max_gas;
@@ -70,14 +72,8 @@ async fn main() -> Result<()> {
     let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
 
     // Generate calldata
-    let contract = Watchtower::new(contract_address, client.clone());
-    let tx = contract.rescue_assets(
-        erc20_addresses
-            .iter()
-            .map(|s| s.parse::<Address>().unwrap())
-            .collect(),
-        backup_address,
-    );
+    let contract = Rescue::new(contract_address, client.clone());
+    let tx = contract.rescue_assets(erc20_addresses.clone(), backup_address);
     let tx = tx.tx.as_eip1559_ref().unwrap();
     let data = tx.data.as_ref().unwrap().clone();
 
@@ -86,42 +82,33 @@ async fn main() -> Result<()> {
     buffer.write("type,signedTx,nonce,gasPrice\n".as_bytes())?;
     for nonce in start_nonce..(start_nonce + 1000) {
         for gas_price in (min_gas..max_gas).step_by(gas_step) {
-            // let contract = __::new(contract_address, client.clone());
-            // let tx = contract.rescueAssets(erc20_addresses, backup_address);
-            // let tx = tx.tx.as_eip1559_ref().unwrap();
-            // let data = tx.data.as_ref().unwrap().clone();
+            let tx: TransactionRequest = TransactionRequest::new()
+                .from(user_address)
+                .chain_id(5u64)
+                .nonce(nonce as u64)
+                .gas(U256::from(2000000))
+                .gas_price(U256::from(gas_price * 1000000000))
+                .to(contract_address)
+                .data(data.clone())
+                .into();
 
-            // let tx: TransactionRequest = TransactionRequest::new()
-            //     .from(user_address)
-            //     .chain_id(5u64)
-            //     .nonce(nonce as u64)
-            //     .gas(U256::from(2000000))
-            //     .gas_price(U256::from(gas_price * 1000000000))
-            //     .to(contract_address)
-            //     .data(data)
-            //     .into();
-
-            // let signature = client.signer().sign_transaction_sync(&tx);
-            // let raw_tx = tx.rlp_signed(&signature);
-            // let rlp = serde_json::to_string(&raw_tx)?;
-            // buffer.write(
-            //     format!(
-            //         "rescue,{},{},{},0x{:x},\n",
-            //         rlp, nonce, gas_price, user_address
-            //     )
-            //     .as_bytes(),
-            // )?;
+            let signature = client.signer().sign_transaction_sync(&tx.clone().into());
+            let raw_tx = tx.clone().rlp_signed(&signature);
+            let rlp = serde_json::to_string(&raw_tx)?;
+            buffer.write(
+                format!(
+                    "rescue,{},{},{},0x{:x},\n",
+                    rlp, nonce, gas_price, user_address
+                )
+                .as_bytes(),
+            )?;
         }
     }
-
-    // let mut xd: Bytes = "".parse::<Bytes>()?;
-    // let mut bruh: TransactionRequest = TransactionRequest::new();
 
     // Presign approve transactions
     let mut offset: usize = 0;
     erc20_addresses.iter().for_each(|s| {
-        let erc20_address = s.parse::<Address>().unwrap();
-        let contract = ERC20::new(erc20_address, client.clone());
+        let contract = ERC20::new(Address::from(s.clone()), client.clone());
         let tx = contract.approve(contract_address, U256::max_value());
         let tx = tx.tx.as_eip1559_ref().unwrap();
         let data = tx.data.as_ref().unwrap().clone();
@@ -132,37 +119,19 @@ async fn main() -> Result<()> {
             .nonce((start_nonce + offset) as u64)
             .gas(U256::from(2000000))
             .gas_price(U256::from(5000000000_usize))
-            .to(erc20_address)
+            .to(Address::from(s.clone()))
             .data(data)
             .into();
 
         let signature = client.signer().sign_transaction_sync(&tx.clone().into());
         let raw_tx = tx.clone().rlp_signed(&signature);
 
-        // xd = raw_tx.clone();
-        // bruh = tx.clone().into();
-        // provider.send_raw_transaction(raw_tx.clone());
-
         let rlp = serde_json::to_string(&raw_tx).unwrap();
         buffer
-            .write(
-                format!(
-                    "approve,{},,,0x{:x},0x{:x}\n",
-                    rlp, user_address, erc20_address
-                )
-                .as_bytes(),
-            )
+            .write(format!("approve,{},,,0x{:x},0x{:x}\n", rlp, user_address, s).as_bytes())
             .unwrap();
         offset += 1;
     });
-
-    // let a = provider.send_transaction(bruh, None).await?;
-    // println!("{:x}", *a);
-    // println!("{:x}", xd);
-    // let pending_tx = provider.send_raw_transaction(xd).await.unwrap();
-    // let tx_hash = *pending_tx;
-    // println!("{:x}", tx_hash);
-
     buffer.flush()?;
 
     Ok(())
