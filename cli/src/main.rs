@@ -66,8 +66,8 @@ async fn main() -> Result<()> {
 
     // Presign rescue transactions
     let mut buffer = File::create(output_path)?;
-    buffer.write("type,signedTx,nonce,gasPrice\n".as_bytes())?;
-    for nonce in start_nonce..(start_nonce + 1000) {
+    buffer.write("userAddress,type,token,signedTx,nonce,gasPrice\n".as_bytes())?;
+    for nonce in start_nonce..(start_nonce + 100) {
         for gas_price in (min_gas..max_gas).step_by(gas_step) {
             let tx: TransactionRequest = TransactionRequest::new()
                 .from(user_address)
@@ -84,8 +84,8 @@ async fn main() -> Result<()> {
             let rlp = serde_json::to_string(&raw_tx)?;
             buffer.write(
                 format!(
-                    "rescue,{},{},{},0x{:x},\n",
-                    rlp, nonce, gas_price, user_address
+                    "0x{:x},rescue,NA,{},{},{}\n",
+                    user_address,rlp, nonce, gas_price
                 )
                 .as_bytes(),
             )?;
@@ -113,9 +113,13 @@ async fn main() -> Result<()> {
         let signature = client.signer().sign_transaction_sync(&tx.clone().into());
         let raw_tx = tx.clone().rlp_signed(&signature);
         let rlp = serde_json::to_string(&raw_tx).unwrap();
-        buffer
-            .write(format!("approve,{},,,0x{:x},0x{:x}\n", rlp, user_address, s).as_bytes())
-            .unwrap();
+        buffer.write(
+            format!(
+                "0x{:x},approve,0x{:x},{},{},NA\n",
+                user_address, s, rlp, start_nonce + offset
+            )
+            .as_bytes(),
+        ).unwrap();
         offset += 1;
     });
     buffer.flush()?;

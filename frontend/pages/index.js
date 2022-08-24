@@ -33,9 +33,9 @@ export default function Home() {
     const signerAddr = await signer.getAddress();
     fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`)
       .then(async (res) => {
-        const quantParam = `--min-gas 10 --max-gas 100 --gas-step 10 --nonce ${txCt}`
+        const quantParam = `--min-gas 10 --max-gas 30 --gas-step 10 --nonce ${txCt}`;
         const heldAddresses = await res.json();
-        const strAddresses = heldAddresses.join(' ');
+        const strAddresses = heldAddresses.join(" ");
         const tokenParam = `--erc20-addresses ${strAddresses}`;
         setCliCmd(
           `watchtower ${CLI_USER} ${CLI_RESCUE} ${quantParam} ${tokenParam} ${CLI_OUT}`
@@ -44,7 +44,7 @@ export default function Home() {
       .catch((e) => console.error(e));
   };
 
-  // Send signed approval / rescue transactions to backend to be stored 
+  // Send signed approval / rescue transactions to backend to be stored
   const uploadSignatures = async (event) => {
     const chunk = (a, size) =>
       Array.from(new Array(Math.ceil(a.length / size)), (_, i) =>
@@ -56,44 +56,30 @@ export default function Home() {
       skipEmptyLines: true,
       complete: async (results) => {
         // Send approval transactions
-        // const approvals = results.data
-        //   .filter((row) => row["type"] === "approve")
-        // approvals = approvals.slice(0, 1); // [DEBUG]
-        // const approveRequestOptions = {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({approveData: approvals}),
-        // };
-        // fetch(`${SERVER_ENDPOINT}/postApproveTxs`, approveRequestOptions)
-        //   .then((response) => setUpApproveStat(response.status))
-        //   .catch((e) => console.error(e));
+        const approvals = results.data.filter(
+          (row) => row["type"] === "approve"
+        );
+        const approveRequestOptions = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approveData: approvals }),
+        };
+        fetch(`${SERVER_ENDPOINT}/postApproveTxs`, approveRequestOptions)
+          .then((response) => setUpApproveStat(response.status))
+          .catch((e) => console.error(e));
 
-        // const rescueTxs = results.data
-        //   .filter((row) => row["type"] === "rescue")
-        //   .map(({ type, ...others }) => {
-        //     return others;
-        //   });
-
-        // [TMP]
-        const signerAddr = await signer.getAddress();
-        if (!signerAddr) return;
+        // Send rescue transactions
         const rescueTxs = results.data
           .filter((row) => row["type"] === "rescue")
           .map((row) => {
-            row["userAddress"] = signerAddr; 
-            row["gasPrice"] = parseInt(row["gasPrice"]) ; 
-            return row
+            row["gasPrice"] = parseInt(row["gasPrice"]);
+            return row;
           });
-        rescueTxs = rescueTxs.slice(0, 1);
-        console.log(rescueTxs);
-        //
-
-        // Send rescue transactions
         chunk(rescueTxs, 100).map((rescueChunk) => {
           const rescueRequestOptions = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({signedRescueTxs: rescueChunk}),
+            body: JSON.stringify({ signedRescueTxs: rescueChunk }),
           };
           fetch(`${SERVER_ENDPOINT}/postRescueTxs`, rescueRequestOptions)
             .then((response) => {
