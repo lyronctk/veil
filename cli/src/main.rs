@@ -1,10 +1,8 @@
 use clap::Parser;
-use ethers::types::transaction::eip2930::AccessList;
-use ethers::{prelude::*, types::transaction::eip2718::TypedTransaction};
+use ethers::prelude::*;
 use eyre::Result;
 use std::fs::File;
 use std::io::prelude::*;
-use std::os::raw;
 use std::sync::Arc;
 
 mod rescue;
@@ -37,16 +35,6 @@ struct Arguments {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Abigen::new("Watchtower", "./abi.json")?
-    //     .generate()?
-    //     .write_to_file("watchtower.rs")?;
-    // Abigen::new("ERC20", "./erc20.json")?
-    //     .generate()?
-    //     .write_to_file("erc20.rs")?;
-    // Abigen::new("Rescue", "./rescue.json")?
-    //     .generate()?
-    //     .write_to_file("rescue.rs")?;
-
     // Setup
     let args = Arguments::parse();
     let private_key = args.private_key;
@@ -61,7 +49,6 @@ async fn main() -> Result<()> {
         .iter()
         .map(|x| x.parse::<Address>().unwrap())
         .collect();
-
     let min_gas = args.min_gas;
     let max_gas = args.max_gas;
     let gas_step = args.gas_step;
@@ -125,7 +112,6 @@ async fn main() -> Result<()> {
 
         let signature = client.signer().sign_transaction_sync(&tx.clone().into());
         let raw_tx = tx.clone().rlp_signed(&signature);
-
         let rlp = serde_json::to_string(&raw_tx).unwrap();
         buffer
             .write(format!("approve,{},,,0x{:x},0x{:x}\n", rlp, user_address, s).as_bytes())
