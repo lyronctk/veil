@@ -41,13 +41,13 @@ const getTokenBalance = async (tokenAddress: string, signerAddr: string): Promis
 };
 
 app.get('/heldERC20/:addr', async (req, res) => {
-  const feeData: ethers.providers.FeeData = await provider.getFeeData();
-  const gp = ethers.utils.formatUnits(feeData.gasPrice ?? 0, 'gwei');
-  const mf = ethers.utils.formatUnits(feeData.maxFeePerGas ?? 0, 'gwei');
-  const mpf = ethers.utils.formatUnits(feeData.maxPriorityFeePerGas ?? 0, 'gwei');
-  console.log(`GAS PRICE: ${gp}`);
-  console.log(`MAX FEE PER GAS: ${mf}`);
-  console.log(`MAX PRIORITY FEE PER GAS: ${mpf}`);
+  // const feeData: ethers.providers.FeeData = await provider.getFeeData();
+  // const gp = ethers.utils.formatUnits(feeData.gasPrice ?? 0, 'gwei');
+  // const mf = ethers.utils.formatUnits(feeData.maxFeePerGas ?? 0, 'gwei');
+  // const mpf = ethers.utils.formatUnits(feeData.maxPriorityFeePerGas ?? 0, 'gwei');
+  // console.log(`GAS PRICE: ${gp}`);
+  // console.log(`MAX FEE PER GAS: ${mf}`);
+  // console.log(`MAX PRIORITY FEE PER GAS: ${mpf}`);
 
   const signerAddr = req.params.addr;
   const tokenAddresses = Object.values(GOERLI_TOKENS);
@@ -75,7 +75,7 @@ app.get('/getRescueTxData', async (req, res) => {
 
 // Put multiple txs in the the database
 app.post('/postRescueTxs', async (req, res) => {
-  console.log(req.body.signedRescueTxs);
+  // console.log(req.body.signedRescueTxs);
   await putRescueTxs(req.body.signedRescueTxs);
   res.send('Posted rescue txs');
 });
