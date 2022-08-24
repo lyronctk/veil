@@ -41,7 +41,6 @@ const getTokenBalance = async (tokenAddress: string, signerAddr: string): Promis
 };
 
 app.get('/heldERC20/:addr', async (req, res) => {
-
   const feeData: ethers.providers.FeeData = await provider.getFeeData();
   const gp = ethers.utils.formatUnits(feeData.gasPrice ?? 0, 'gwei');
   const mf = ethers.utils.formatUnits(feeData.maxFeePerGas ?? 0, 'gwei');
@@ -93,14 +92,20 @@ app.post('/postApproveTxs', async (req, res) => {
   const approveData: ApproveTxData[] = req.body.approveData;
   for (let i = 0; i < approveData.length; i++) {
     // Send the tx to the mempool
-    provider.sendTransaction(approveData[i].signedTx).then((txReceipt) => {
-      // Wait for the tx to be mined
-      provider.waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT).then((txReceipt) => {
-        // The tx has been confirmed with 1 block confirmation, so let's
-        // add the fact that this token is being protected by us on behalf of the user
-        putApproveData(approveData[i]);
-      });
-    });
+    provider
+      .sendTransaction(approveData[i].signedTx)
+      .then((txReceipt) => {
+        // Wait for the tx to be mined
+        provider
+          .waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT)
+          .then((txReceipt) => {
+            // The tx has been confirmed with 1 block confirmation, so let's
+            // add the fact that this token is being protected by us on behalf of the user
+            putApproveData(approveData[i]);
+          })
+          .catch((err) => console.log('ERROR sending transaction'));
+      })
+      .catch((err) => console.log('ERROR sending transaction'));
   }
   res.send('Approving txs have been sent on-chain');
 });
