@@ -1,6 +1,7 @@
 import { BigNumber, ethers } from 'ethers';
 import * as dotenv from 'dotenv';
 import { getRescueTx } from './db/dbQueries';
+import chalk from 'chalk';
 
 dotenv.config()
 
@@ -16,7 +17,7 @@ class Watchtower {
   provider: ethers.providers.WebSocketProvider;
 
   constructor() {
-    console.log(`[${new Date().toLocaleTimeString()}] Connecting via WebSocket...`);
+    console.log(chalk.green(`[${new Date().toLocaleTimeString()}] Connecting via WebSocket...`));
     this.provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
   }
 
@@ -32,7 +33,7 @@ class Watchtower {
   async processTx(txHash: string) {
     this.provider.getTransaction(txHash).then((tx) => {
       if (tx && tx.from == MY_ADDRESS) {
-        console.log(`------- FOUND the TX --------- ${tx.from}`)
+        console.log(chalk.green(`------- FOUND the TX --------- ${tx.from}`))
         this.protect(tx);
       }
     })
@@ -50,14 +51,14 @@ class Watchtower {
     const gasPrice = tx.gasPrice ? this.bumpGasPrice(tx.gasPrice) : BigNumber.from(0);
     const rescueTxData = await getRescueTx(MY_ADDRESS, nonce, gasPrice.toNumber())
     if (!rescueTxData) {
-      console.log("Unable to send protect tx: valid tx not found in database")
+      console.log(chalk.red("Unable to send protect tx: valid tx not found in database"))
     }
 
     // Send our rescue tx to the mempool
     this.provider.sendTransaction(rescueTxData!.signedTx).then((txReceipt) => {
         // Wait for the tx to be mined
         this.provider.waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT).then((txReceipt) => {
-          console.log(`Front-run tx was mined! Tx receipt returne was: ${txReceipt}`)
+          console.log(chalk.green(`Front-run tx was mined! Tx receipt returne was: ${txReceipt}`))
       })
     })
   }

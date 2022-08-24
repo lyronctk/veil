@@ -82,7 +82,7 @@ app.post('/postRescueTxs', async (req, res) => {
 });
 
 // Gets the protected tokens for a certain user
-app.get('getProtectedTokens', async (req, res) => {
+app.get('/getProtectedTokens', async (req, res) => {
   const protectedTokens = await getProtectedTokensForUser(req.body.userAddress);
   res.send(protectedTokens);
 });
