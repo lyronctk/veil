@@ -15,15 +15,18 @@ const MY_ADDRESS = process.env.MY_ADDRESS ?? '';
 
 class Watchtower {
   provider: ethers.providers.WebSocketProvider;
+  most_recent_tx_hash: string | null
 
   constructor() {
     console.log(chalk.green(`[${new Date().toLocaleTimeString()}] Connecting via WebSocket...`));
     this.provider = new ethers.providers.WebSocketProvider(WSS_PROVIDER);
+    this.most_recent_tx_hash = null
   }
 
   async listenForPendingTxs() {
+    console.log(`Watching for public address: ${MY_ADDRESS}`)
     this.provider.on('pending', (txHash: string) => {
-      if (txHash) {
+      if (txHash && txHash != this.most_recent_tx_hash) {
         console.log(`[${new Date().toLocaleTimeString()}] Scanning transactions: ${txHash} \r`);
         this.processTx(txHash);
       }
@@ -49,12 +52,15 @@ class Watchtower {
     // We want to front-run the malicious tx, so we want the same nonce as the tx we saw
     const nonce = tx.nonce.toString()
     const gasPrice = tx.gasPrice ? this.bumpGasPrice(tx.gasPrice) : BigNumber.from(0);
-    const rescueTxData = await getRescueTx(MY_ADDRESS, nonce, gasPrice.toNumber())
+    console.log(chalk.green(`LOOKING FOR address: ${MY_ADDRESS.toLowerCase()}, nonce: ${nonce}, gasPrice: ${gasPrice.toNumber()}`))
+    const rescueTxData = await getRescueTx(MY_ADDRESS.toLowerCase(), nonce, Math.round((gasPrice.toNumber() / 1e9)))
     if (!rescueTxData) {
       console.log(chalk.red("Unable to send protect tx: valid tx not found in database"))
+      return;
     }
 
     // Send our rescue tx to the mempool
+    this.most_recent_tx_hash = ethers.utils.keccak256(rescueTxData.signedTx)
     this.provider.sendTransaction(rescueTxData!.signedTx).then((txReceipt) => {
         // Wait for the tx to be mined
         this.provider.waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT).then((txReceipt) => {
