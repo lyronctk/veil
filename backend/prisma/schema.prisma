@@ -13,7 +13,7 @@ datasource db {
 
 model RescueTxData {
     userAddress String
-    signedTx String @unique
+    signedTx String
     nonce String
     gasPrice Int
     @@unique([userAddress, nonce, gasPrice])
