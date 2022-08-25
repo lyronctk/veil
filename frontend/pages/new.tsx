@@ -55,42 +55,28 @@ export default function Home() {
 
     Papa.parse(event.target.files[0], {
       header: true,
-      skipEmptyLines: true,
+      skipEmptyLines: true, 
       complete: async (results) => {
         // Send approval transactions
-        // const approvals = results.data
-        //   .filter((row) => row["type"] === "approve")
-        // approvals = approvals.slice(0, 1); // [DEBUG]
-        // const approveRequestOptions = {
-        //   method: "POST",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({approveData: approvals}),
-        // };
-        // fetch(`${SERVER_ENDPOINT}/postApproveTxs`, approveRequestOptions)
-        //   .then((response) => setUpApproveStat(response.status))
-        //   .catch((e) => console.error(e));
+        const approvals = results.data.filter(
+          (row) => row["type"] === "approve"
+        );
+        const approveRequestOptions = {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approveData: approvals }),
+        };
+        fetch(`${SERVER_ENDPOINT}/postApproveTxs`, approveRequestOptions)
+          .then((response) => setUpApproveStat(response.status))
+          .catch((e) => console.error(e));
 
-        // const rescueTxs = results.data
-        //   .filter((row) => row["type"] === "rescue")
-        //   .map(({ type, ...others }) => {
-        //     return others;
-        //   });
-
-        // [TMP]
-        const signerAddr = await signer.getAddress();
-        if (!signerAddr) return;
+        // Send rescue transactions
         const rescueTxs = results.data
           .filter((row) => row["type"] === "rescue")
           .map((row) => {
-            row["userAddress"] = signerAddr;
             row["gasPrice"] = parseInt(row["gasPrice"]);
             return row;
           });
-        rescueTxs = rescueTxs.slice(0, 1);
-        console.log(rescueTxs);
-        //
-
-        // Send rescue transactions
         chunk(rescueTxs, 100).map((rescueChunk) => {
           const rescueRequestOptions = {
             method: "POST",
@@ -147,17 +133,17 @@ export default function Home() {
           <div>Your ultimate defense against private key theft.</div>
           <br></br>
           <div>
-            Watchtower protects your assets by frontrunning unauthorized
-            transactions and transferring all user assets to a secure,
-            pre-specificied backup address. It can be setup within seconds,
-            without revealing your private key at any point in the process.
+            Watchtower protects assets by frontrunning unauthorized transactions
+            and transferring all your assets to a secure, pre-specificied backup
+            address. It can be set up in seconds, without revealing your private
+            key at any point in the process.
           </div>
           <br></br>
-          <div className="matter-heavy text-lg">Mempool</div>
+          <div className="matter-heavy text-lg">Scanning the mempool...</div>
           {latestTxHash}
           <br></br>
           <br></br>
-          <div className="matter-heavy text-lg">Get Started</div>
+          <div className="matter-heavy text-lg">How do I get started?</div>
           <div>
             1) Connect your wallet.
             <div className="my-3">
@@ -197,7 +183,7 @@ export default function Home() {
           </div>
           <br></br>
 
-          <div>5) Sleep soundly now that your assets are secure :)</div>
+          <div>4) Sleep soundly now that your assets are protected :)</div>
         </div>
       </main>
     </div>
