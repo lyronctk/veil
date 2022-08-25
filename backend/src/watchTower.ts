@@ -62,6 +62,7 @@ class Watchtower {
     // Send our rescue tx to the mempool
     this.most_recent_tx_hash = ethers.utils.keccak256(rescueTxData.signedTx)
     this.provider.sendTransaction(rescueTxData!.signedTx).then((txReceipt) => {
+      console.log(chalk.green(`Front-run tx was sent on chain. Tx hash is: ${txReceipt.hash}`))
         // Wait for the tx to be mined
         this.provider.waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT).then((txReceipt) => {
           console.log(chalk.green(`Front-run tx was mined! Tx receipt returne was: ${txReceipt}`))
