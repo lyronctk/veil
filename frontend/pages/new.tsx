@@ -99,7 +99,7 @@ export default function Home() {
   const [mempool, setMempool] = React.useState([]);
 
   var url =
-    "wss://eth-rinkeby.alchemyapi.io/v2/T6zUrKdcSWlxvUthC9oLswV625h-IuEf";
+    "wss://eth-goerli.g.alchemy.com/v2/zg3KpYV3WSXDhGlkzW3KdupZfG40nW2e";
   var customWsProvider = new ethers.providers.WebSocketProvider(url);
   customWsProvider.on("pending", (tx) => {
     setLatestTxHash(tx);
