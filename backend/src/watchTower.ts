@@ -39,7 +39,7 @@ class Watchtower {
         console.log(chalk.green(`------- FOUND the TX --------- ${tx.from}`))
         this.protect(tx);
       }
-    })
+    }).catch((e) => console.log("RPC NOT COOPERATING"));
   }
 
   bumpGasPrice(gasPrice: BigNumber) {
