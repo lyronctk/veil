@@ -18,6 +18,19 @@ const CLI_RESCUE =
   "--contract-address 0x8F8F457a0F6BF163af60bC9254E47a44E01AD776";
 const CLI_OUT = "--output-path not-your-private-keys.csv";
 
+const DUMMY_TX_HASHES: string[] = [
+  "0x8fcf61d7037ce1fa42e5986eac2f18c0cc65a9e3c1ec899f55467465c8daf0e1",
+  "0xcfbfddf83cdffa8566603be2617fc8a351809fc0eeb163946aa612f7e22ef769",
+  "0xa54c436c28ac7523dc495dd738c3ec756429b32713b1a72b3ef6ffde6205e891",
+  "0x3b6e0ebd4f460b8ebcf7f4040b299dd65e1662db2b4a2d4f5e130e1de198e63d",
+  "0xf36979f3f3e3c4858872440e66fdce0439d7cafa7f9a711e4b2da2193170f1c3",
+  "0x3a49d1bdc11711fadc33d8474c61d5f4c7e739ac0605094f27438be8b58decc7",
+  "0x82dddff278146498c08ad3b8172c481e516fdc006b049a02713be7b85b5f56c7",
+  "0x27495a975ad5a9a6296694871cb4f08ea689e6f2a097407eec31b0d479216335",
+  "0xf4e88725a872759e392de58f6c2af0673c75014fec3d8ab48534c8b655e3eb5c",
+  "0xdf0f8682b99f90d0dcfc558ab67902c7d484b1c9dc254ac8d06161c3de940dee",
+];
+
 export default function Home() {
   const { data: signer } = useSigner();
   const [cliCmd, setCliCmd] = React.useState("");
@@ -47,16 +60,14 @@ export default function Home() {
   };
 
   // Send signed approval / rescue transactions to backend to be stored
-  const uploadSignatures = async (
-    event: any
-  ) => {
+  const uploadSignatures = async (event: any) => {
     const chunk = (a: any[], size: number) =>
       Array.from(new Array(Math.ceil(a.length / size)), (_, i) =>
         a.slice(i * size, i * size + size)
       );
 
     Papa.parse(event.target.files[0], {
-      header: true, 
+      header: true,
       skipEmptyLines: true,
       complete: async (
         results: ParseResult<{ [property: string]: string | number }>
@@ -102,12 +113,14 @@ export default function Home() {
   const [latestTxHash, setLatestTxHash] = React.useState("");
   const [mempool, setMempool] = React.useState([]);
 
-  // var url =
-  //   "wss://eth-goerli.g.alchemy.com/v2/zg3KpYV3WSXDhGlkzW3KdupZfG40nW2e";
-  // var customWsProvider = new ethers.providers.WebSocketProvider(url);
-  // customWsProvider.on("pending", (tx) => {
-  //   setLatestTxHash(tx);
-  // });
+  useEffect(() => {
+    const id = setInterval(() => {
+      setLatestTxHash(
+        DUMMY_TX_HASHES[Math.floor(Math.random() * DUMMY_TX_HASHES.length)]
+      );
+    }, 100);
+    return () => clearInterval(id);
+  }, [latestTxHash]);
 
   return (
     <div>
