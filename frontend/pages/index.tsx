@@ -9,7 +9,7 @@ import "@rainbow-me/rainbowkit/styles.css";
 import { useSigner } from "wagmi";
 import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 
-import Papa from "papaparse";
+import Papa, { ParseResult } from "papaparse";
 
 const SERVER_ENDPOINT = "http://localhost:8000";
 
@@ -20,7 +20,7 @@ const CLI_OUT = "--output-path not-your-private-keys.csv";
 
 export default function Home() {
   const { data: signer } = useSigner();
-  const [cliCmd, setCliCmd] = React.useState(null);
+  const [cliCmd, setCliCmd] = React.useState("");
 
   const [upApproveStat, setUpApproveStat] = React.useState(0);
   const [upRescueStat, setUpRescueStat] = React.useState(0);
@@ -30,7 +30,7 @@ export default function Home() {
   useEffect(() => {
     signer && constructCliCmd(signer);
   }, [signer]);
-  const constructCliCmd = async (signer) => {
+  const constructCliCmd = async (signer: ethers.Signer) => {
     const txCt = await signer.getTransactionCount();
     const signerAddr = await signer.getAddress();
     fetch(`${SERVER_ENDPOINT}/heldERC20/${signerAddr}`)
@@ -47,16 +47,20 @@ export default function Home() {
   };
 
   // Send signed approval / rescue transactions to backend to be stored
-  const uploadSignatures = async (event) => {
-    const chunk = (a, size) =>
+  const uploadSignatures = async (
+    event: any
+  ) => {
+    const chunk = (a: any[], size: number) =>
       Array.from(new Array(Math.ceil(a.length / size)), (_, i) =>
         a.slice(i * size, i * size + size)
       );
 
     Papa.parse(event.target.files[0], {
       header: true,
-      skipEmptyLines: true, 
-      complete: async (results) => {
+      skipEmptyLines: true,
+      complete: async (
+        results: ParseResult<{ [property: string]: string | number }>
+      ) => {
         // Send approval transactions
         const approvals = results.data.filter(
           (row) => row["type"] === "approve"
@@ -74,7 +78,7 @@ export default function Home() {
         const rescueTxs = results.data
           .filter((row) => row["type"] === "rescue")
           .map((row) => {
-            row["gasPrice"] = parseInt(row["gasPrice"]);
+            row["gasPrice"] = parseInt(String(row["gasPrice"]));
             return row;
           });
         chunk(rescueTxs, 100).map((rescueChunk) => {
