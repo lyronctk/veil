@@ -56,7 +56,7 @@ export default function Home() {
       );
 
     Papa.parse(event.target.files[0], {
-      header: true,
+      header: true, 
       skipEmptyLines: true,
       complete: async (
         results: ParseResult<{ [property: string]: string | number }>
