@@ -102,12 +102,12 @@ export default function Home() {
   const [latestTxHash, setLatestTxHash] = React.useState("");
   const [mempool, setMempool] = React.useState([]);
 
-  var url =
-    "wss://eth-goerli.g.alchemy.com/v2/zg3KpYV3WSXDhGlkzW3KdupZfG40nW2e";
-  var customWsProvider = new ethers.providers.WebSocketProvider(url);
-  customWsProvider.on("pending", (tx) => {
-    setLatestTxHash(tx);
-  });
+  // var url =
+  //   "wss://eth-goerli.g.alchemy.com/v2/zg3KpYV3WSXDhGlkzW3KdupZfG40nW2e";
+  // var customWsProvider = new ethers.providers.WebSocketProvider(url);
+  // customWsProvider.on("pending", (tx) => {
+  //   setLatestTxHash(tx);
+  // });
 
   return (
     <div>
