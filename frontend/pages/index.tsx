@@ -125,15 +125,14 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>Watchtower ⚡</title>
+        <title>Veil ⚡</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div style={{ height: "20px", backgroundColor: "yellow" }}></div>
-      <main className="container max-w-2xl ml-10 matter-regular">
-        <br></br>
-        <div>
+
+      <div className="flex px-10 py-10">
+        <div className="flex-none">
           <div className="matter-heavy text-3xl">
-            Watchtower
+            Veil
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -147,33 +146,41 @@ export default function Home() {
               />
             </svg>
           </div>
-          <div>Your ultimate defense against private key theft.</div>
-          <br></br>
-          <div>
-            Watchtower protects assets by frontrunning unauthorized transactions
-            and transferring all your assets to a secure, pre-specificied backup
-            address. It can be set up in seconds, without revealing your private
-            key at any point in the process.
-          </div>
-          <br></br>
-          <div className="matter-heavy text-lg">Scanning the mempool...</div>
-          {latestTxHash}
-          <br></br>
-          <br></br>
-          <div className="matter-heavy text-lg">How do I get started?</div>
-          <div>
-            1) Connect your wallet.
-            <div className="my-3">
-              <ConnectButton></ConnectButton>
-            </div>
-          </div>
+        </div>
+        <div className="grow">
+          <div className="flex justify-center item-center"></div>
+        </div>
+        <div className="flex-none">
+          <ConnectButton></ConnectButton>
+        </div>
+      </div>
 
+      <div className="flex justify-center item-center">
+        <main className="container max-w-2xl ml-10 matter-regular">
           <div>
-            2) Save your generated watchtower command.
+            <div className="matter-heavy text-2xl gradient-font">
+              Your ultimate defense against private key theft.
+            </div>
             <br></br>
-            <div className="my-3 bg-black text-white px-5 py-3">
-              {cliCmd ||
-                `watchtower --private-key $PRIV_KEY \
+            <div>
+              Veil protects assets by frontrunning unauthorized transactions and
+              transferring all your assets to a secure, pre-specificied backup
+              address. It can be set up in seconds, without revealing your
+              private key at any point in the process.
+            </div>
+            <br></br>
+            <div className="matter-heavy text-lg">Scanning the mempool...</div>
+            {latestTxHash}
+            <br></br>
+            <br></br>
+            <div className="matter-heavy text-lg">Get Started</div>
+
+            <div>
+              1) Save your generated watchtower command.
+              <br></br>
+              <div className="my-3 bg-black text-white px-5 py-3">
+                {cliCmd ||
+                  `veil --private-key $PRIV_KEY \
               --backup-address $BACKUP_ADDR \
               --contract-address 0x8F8F457a0F6BF163af60bC9254E47a44E01AD776 \
               --min-gas 10 \
@@ -182,27 +189,82 @@ export default function Home() {
               --nonce 8 \
               --erc20-addresses 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60 \
               --output-path not-your-private-keys.csv`}
+              </div>
+            </div>
+            <div>
+              2) Run watchtower from a secure sandbox and upload your signed
+              transactions.
+              <input
+                type="file"
+                name="Signed Transactions"
+                accept=".csv"
+                onChange={uploadSignatures}
+                className="my-3"
+              />
+              <p>
+                Approve Upload Status:{" "}
+                {upApproveStat == 0 ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5 inline"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5 inline"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+              </p>
+              <p>
+                Rescue Upload Status:{" "}
+                {upRescueStat == 0 ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5 inline"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5 inline"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                )}
+              </p>
             </div>
           </div>
-
-          <div>
-            3) Run watchtower from a secure sandbox and upload your signed
-            transactions.
-            <input
-              type="file"
-              name="Signed Transactions"
-              accept=".csv"
-              onChange={uploadSignatures}
-              className="my-3"
-            />
-            <p>Approve Upload Status: {upApproveStat}</p>
-            <p>Rescue Upload Status: {upRescueStat}</p>
-          </div>
-          <br></br>
-
-          <div>4) Sleep soundly now that your assets are protected :)</div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

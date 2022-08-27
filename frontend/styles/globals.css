@@ -8,12 +8,22 @@ body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  color: black;
-  background-color: #ebf786;
-  opacity: 0.9;
+  color: white;
+  background-color: black;
+  /* opacity: 0.9;
   background-image: linear-gradient(#d3e62b 1px, transparent 1px),
     linear-gradient(to right, #d3e62b 1px, #ebf786 1px);
-  background-size: 20px 20px;
+  background-size: 20px 20px; */
+  background-color: #000000;
+  opacity: 1;
+  background-image: repeating-radial-gradient(
+      circle at 0 0,
+      transparent 0,
+      #000000 10px
+    ),
+    repeating-linear-gradient(#48484855, #252525);
+
+  height: 100vh;
 }
 
 a {
@@ -49,4 +59,10 @@ a {
   background-image: linear-gradient(#d3e62b 1px, transparent 1px),
     linear-gradient(to right, #d3e62b 1px, #ebf786 1px);
   background-size: 20px 20px;
+}
+
+.gradient-font {
+  background: -webkit-linear-gradient(#eee, #acacac);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
