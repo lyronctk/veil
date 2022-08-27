@@ -113,9 +113,9 @@ app.post('/postApproveTxs', async (req, res) => {
             // add the fact that this token is being protected by us on behalf of the user
             putApproveData(approveData[i]);
           })
-          .catch((err) => console.log('ERROR sending transaction'));
+          .catch((err) => console.log(err));
       })
-      .catch((err) => console.log('ERROR sending transaction'));
+      .catch((err) => console.log(err));
   }
   res.send('Approving txs have been sent on-chain');
 });

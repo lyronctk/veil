@@ -57,8 +57,11 @@ async fn main() -> Result<()> {
     let gas_step = args.gas_step;
 
     let provider = Provider::<Http>::try_from(
-        "https://eth-goerli.g.alchemy.com/v2/TJucxyshwo0zf6qeWzFXSWOkhlOvrdGd",
+        "https://virulent-virulent-sponge.quiknode.pro/6130df443ce210c56ae922a72ced75977ae29cf9/",
     )?;
+    // let provider = Provider::<Http>::try_from(
+    //     "https://eth-goerli.g.alchemy.com/v2/TJucxyshwo0zf6qeWzFXSWOkhlOvrdGd",
+    // )?;
     let client = Arc::new(SignerMiddleware::new(provider.clone(), wallet));
 
     // Generate calldata
@@ -105,7 +108,7 @@ async fn main() -> Result<()> {
 
         let tx: TransactionRequest = TransactionRequest::new()
             .from(user_address)
-            .chain_id(5u64)
+            .chain_id(chain_id)
             .nonce((start_nonce + offset) as u64)
             .gas(U256::from(2000000))
             .gas_price(U256::from(5000000000_usize))
