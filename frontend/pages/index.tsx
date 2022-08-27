@@ -53,7 +53,7 @@ export default function Home() {
         const strAddresses = heldAddresses.join(" ");
         const tokenParam = `--erc20-addresses ${strAddresses}`;
         setCliCmd(
-          `watchtower ${CLI_USER} ${CLI_RESCUE} ${quantParam} ${tokenParam} ${CLI_OUT}`
+          `veil ${CLI_USER} ${CLI_RESCUE} ${quantParam} ${tokenParam} ${CLI_OUT}`
         );
       })
       .catch((e) => console.error(e));
