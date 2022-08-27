@@ -23,7 +23,7 @@ const myTheme = merge(darkTheme(), {
 
 // Connect to Ethereum via wagmi
 const { chains, provider } = configureChains(
-  [chain.goerli],
+  [chain.goerli, chain.mainnet],
   [publicProvider()]
 );
 const { connectors } = getDefaultWallets({ appName: "Watchtower", chains });

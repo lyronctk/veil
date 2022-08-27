@@ -24,9 +24,10 @@ const TX_TIMEOUT = 60000;
 
 // ----- START PORT from Server.js ------
 
-const CHAIN_ID = 5;
+const CHAIN_ID = 1;
 
 const GOERLI_TOKENS =
+  // @ts-ignore
   CHAIN_ID == 5
     ? {
         UNI: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984',
