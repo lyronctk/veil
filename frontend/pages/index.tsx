@@ -13,9 +13,15 @@ import Papa, { ParseResult } from "papaparse";
 
 const SERVER_ENDPOINT = "https://ethwatchtower.ngrok.io";
 
+const CHAIN_ID = 5;
+
+const CONTRACT_ADDR =
+  CHAIN_ID == 5
+    ? "0x8F8F457a0F6BF163af60bC9254E47a44E01AD776"
+    : "0xa576edc195c48440fa98840fb3721bf17c1656f6";
 const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR";
-const CLI_RESCUE =
-  "--contract-address 0x8F8F457a0F6BF163af60bC9254E47a44E01AD776";
+const CLI_RESCUE = "--contract-address ";
+const CLI_CHAIN = `--chain-id ${CHAIN_ID}`;
 const CLI_OUT = "--output-path not-your-private-keys.csv";
 
 const DUMMY_TX_HASHES: string[] = [
@@ -53,7 +59,7 @@ export default function Home() {
         const strAddresses = heldAddresses.join(" ");
         const tokenParam = `--erc20-addresses ${strAddresses}`;
         setCliCmd(
-          `veil ${CLI_USER} ${CLI_RESCUE} ${quantParam} ${tokenParam} ${CLI_OUT}`
+          `veil ${CLI_USER} ${CLI_RESCUE} ${quantParam} ${tokenParam} ${CLI_CHAIN} ${CLI_OUT}`
         );
       })
       .catch((e) => console.error(e));
