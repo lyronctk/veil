@@ -16,9 +16,9 @@ Visit our [websiste](ethveil.xyz) to get set up. Using Veil will require you to 
 
 Requires Rust 1.56.1 or higher. You can install rust [here](https://www.rust-lang.org/tools/install).
 ```
-git clone https://github.com/jtguibas/ethereum-watchtower.git
-cd ethereum-watchtower/cli; cargo install --path .
-watchtower \
+git clone git@github.com:lyronctk/veil.git
+cd veil/cli; cargo install --path .
+veil \
   --private-key $YOUR_PRIVATE_KEY \
   --backup-address $YOUR_BACKUP_ADDRESS \
   --contract-address $YOUR_CONTRACT_ADDRESS \
