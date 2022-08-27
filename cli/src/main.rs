@@ -20,6 +20,8 @@ struct Arguments {
     #[clap(long)]
     contract_address: String,
     #[clap(long)]
+    chain_id: u64,
+    #[clap(long)]
     min_gas: usize,
     #[clap(long)]
     max_gas: usize,
@@ -42,6 +44,7 @@ async fn main() -> Result<()> {
     let user_address: Address = wallet.address();
     let backup_address = args.backup_address.parse::<Address>()?;
     let contract_address = args.contract_address.parse::<Address>()?;
+    let chain_id = args.chain_id;
     let start_nonce = args.nonce;
     let output_path = args.output_path;
     let erc20_addresses: Vec<Address> = args
@@ -71,7 +74,7 @@ async fn main() -> Result<()> {
         for gas_price in (min_gas..max_gas).step_by(gas_step) {
             let tx: TransactionRequest = TransactionRequest::new()
                 .from(user_address)
-                .chain_id(5u64)
+                .chain_id(chain_id)
                 .nonce(nonce as u64)
                 .gas(U256::from(2000000))
                 .gas_price(U256::from(gas_price * 1000000000))
@@ -85,7 +88,7 @@ async fn main() -> Result<()> {
             buffer.write(
                 format!(
                     "0x{:x},rescue,NA,{},{},{}\n",
-                    user_address,rlp, nonce, gas_price
+                    user_address, rlp, nonce, gas_price
                 )
                 .as_bytes(),
             )?;
@@ -113,13 +116,18 @@ async fn main() -> Result<()> {
         let signature = client.signer().sign_transaction_sync(&tx.clone().into());
         let raw_tx = tx.clone().rlp_signed(&signature);
         let rlp = serde_json::to_string(&raw_tx).unwrap();
-        buffer.write(
-            format!(
-                "0x{:x},approve,0x{:x},{},{},NA\n",
-                user_address, s, rlp, start_nonce + offset
+        buffer
+            .write(
+                format!(
+                    "0x{:x},approve,0x{:x},{},{},NA\n",
+                    user_address,
+                    s,
+                    rlp,
+                    start_nonce + offset
+                )
+                .as_bytes(),
             )
-            .as_bytes(),
-        ).unwrap();
+            .unwrap();
         offset += 1;
     });
     buffer.flush()?;
