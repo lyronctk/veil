@@ -16,6 +16,7 @@
     "cors": "^2.8.5",
     "ethers": "^5.7.0",
     "jsonpack": "^1.1.5",
+    "lodash.merge": "^4.6.2",
     "next": "^12.2.5",
     "papaparse": "^5.3.2",
     "react": "^18.2.0",
