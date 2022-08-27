@@ -99,25 +99,26 @@ app.get('/getProtectedTokens', async (req, res) => {
 // Submit multiple approve txs on-chain
 // reigster that the asset is protected only if the tx is mined on-chain
 app.post('/postApproveTxs', async (req, res) => {
-  const approveData: ApproveTxData[] = req.body.approveData;
-  for (let i = 0; i < approveData.length; i++) {
-    // Send the tx to the mempool
-    provider
-      .sendTransaction(approveData[i].signedTx)
-      .then((txReceipt) => {
-        // Wait for the tx to be mined
-        provider
-          .waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT)
-          .then((txReceipt) => {
-            // The tx has been confirmed with 1 block confirmation, so let's
-            // add the fact that this token is being protected by us on behalf of the user
-            putApproveData(approveData[i]);
-          })
-          .catch((err) => console.log(err));
-      })
-      .catch((err) => console.log(err));
-  }
-  res.send('Approving txs have been sent on-chain');
+  // const approveData: ApproveTxData[] = req.body.approveData;
+  // for (let i = 0; i < approveData.length; i++) {
+  //   // Send the tx to the mempool
+  //   provider
+  //     .sendTransaction(approveData[i].signedTx)
+  //     .then((txReceipt) => {
+  //       console.log(txReceipt);
+  //       // Wait for the tx to be mined
+  //       provider
+  //         .waitForTransaction(txReceipt.hash, 1, TX_TIMEOUT)
+  //         .then((txReceipt) => {
+  //           // The tx has been confirmed with 1 block confirmation, so let's
+  //           // add the fact that this token is being protected by us on behalf of the user
+  //           putApproveData(approveData[i]);
+  //         })
+  //         .catch((err) => console.log(err));
+  //     })
+  //     .catch((err) => console.log(err));
+  // }
+  // res.send('Approving txs have been sent on-chain');
 });
 
 app.listen(PORT, () => {
