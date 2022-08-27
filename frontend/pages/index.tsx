@@ -11,7 +11,7 @@ import { ConnectButton, useConnectModal } from "@rainbow-me/rainbowkit";
 
 import Papa, { ParseResult } from "papaparse";
 
-const SERVER_ENDPOINT = "http://localhost:8000";
+const SERVER_ENDPOINT = "https://ethwatchtower.ngrok.io";
 
 const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR";
 const CLI_RESCUE =
