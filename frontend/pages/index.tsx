@@ -13,9 +13,10 @@ import Papa, { ParseResult } from "papaparse";
 
 const SERVER_ENDPOINT = "https://ethwatchtower.ngrok.io";
 
-const CHAIN_ID = 5;
+const CHAIN_ID = 1;
 
 const CONTRACT_ADDR =
+  // @ts-ignore
   CHAIN_ID == 5
     ? "0x8F8F457a0F6BF163af60bC9254E47a44E01AD776"
     : "0xa576edc195c48440fa98840fb3721bf17c1656f6";
