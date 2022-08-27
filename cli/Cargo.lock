@@ -2443,6 +2443,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "veil"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "ethers",
+ "eyre",
+ "serde_json",
+ "tokio",
+]
+
+[[package]]
 name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2554,18 +2566,6 @@ dependencies = [
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",
-]
-
-[[package]]
-name = "watchtower"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "ethers",
- "eyre",
- "serde_json",
- "tokio",
 ]
 
 [[package]]
