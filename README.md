@@ -12,7 +12,7 @@ The immutability of transactions and lack of recourse in the event of a personal
 <img width="867" alt="image" src="https://user-images.githubusercontent.com/97858468/185810062-228b9d12-a362-47b8-85ba-68021f7be222.png">
 
 ## Usage
-Visit our [websiste](ethveil.xyz) to get set up. Using Veil will require you to install a client tool that will presign certain transactions under the event that your wallet's funds are under attack. The client runs entirely locally and requires no connection to the internet. These transactions will then be broadcasted by our hosted service which will monitor the mempool for unauthorized transactions.
+Visit our [website](ethveil.xyz) to get set up. Using Veil will require you to install a client tool that will presign certain transactions under the event that your wallet's funds are under attack. The client runs entirely locally. Veil will monitor the mempool for unauthorized transactins and broadcast the pre-signed rescue transactions to transfer funds to your backup address. 
 
 Requires Rust 1.56.1 or higher. You can install rust [here](https://www.rust-lang.org/tools/install).
 ```
@@ -25,6 +25,8 @@ veil \
   --min-gas 10 \
   --max-gas 100 \
   --gas-step 10 \
-  --nonce 0 \
+  --nonce $YOUR_NONCE \
+  --erc20-addresses $ERC_20_ADDRESS_TO_PROTECT \
+  --chain-id 1
   --output-path "not-your-private-keys.csv"
 ```
