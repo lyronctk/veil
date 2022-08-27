@@ -20,7 +20,7 @@ const CONTRACT_ADDR =
     ? "0x8F8F457a0F6BF163af60bC9254E47a44E01AD776"
     : "0xa576edc195c48440fa98840fb3721bf17c1656f6";
 const CLI_USER = "--private-key $PRIV_KEY --backup-address $BACKUP_ADDR";
-const CLI_RESCUE = "--contract-address ";
+const CLI_RESCUE = `--contract-address ${CONTRACT_ADDR}`;
 const CLI_CHAIN = `--chain-id ${CHAIN_ID}`;
 const CLI_OUT = "--output-path not-your-private-keys.csv";
 
